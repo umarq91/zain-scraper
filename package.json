@@ -1,0 +1,14 @@
+{
+  "name": "zaib-stock-watcher",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "node check.js",
+    "once": "node check.js --once",
+    "test:email": "node check.js --test"
+  },
+  "dependencies": {
+    "nodemailer": "^8.0.7"
+  }
+}

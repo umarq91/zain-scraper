@@ -1,0 +1,8 @@
+{
+  "products": [
+    "https://zaibonline.com/products/PRODUCT-HANDLE-ONE",
+    "https://zaibonline.com/products/PRODUCT-HANDLE-TWO"
+  ],
+  "watchSizes": ["M", "L"],
+  "intervalMinutes": 5
+}

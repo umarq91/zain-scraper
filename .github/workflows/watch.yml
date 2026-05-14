@@ -1,0 +1,47 @@
+name: Stock Watcher
+
+on:
+  # GitHub Actions cron: minimum granularity is 5 minutes, and scheduled runs
+  # are often delayed several minutes under load. It is not precise.
+  schedule:
+    - cron: "*/5 * * * *"
+  # Lets you trigger a run by hand from the Actions tab.
+  workflow_dispatch: {}
+
+# Never run two checks at once — they would both try to push state.json.
+concurrency:
+  group: stock-watcher
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # needed to commit state.json back to the repo
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - run: npm ci
+
+      - name: Check stock
+        env:
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          GMAIL_TO: ${{ secrets.GMAIL_TO }}
+        run: node check.js --once
+
+      - name: Persist state.json
+        run: |
+          if [[ -n "$(git status --porcelain state.json)" ]]; then
+            git config user.name "stock-watcher-bot"
+            git config user.email "stock-watcher-bot@users.noreply.github.com"
+            git add state.json
+            git commit -m "update stock state [skip ci]"
+            git push
+          else
+            echo "No state change."
+          fi
