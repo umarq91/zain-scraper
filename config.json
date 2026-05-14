@@ -1,8 +1,13 @@
 {
   "products": [
     "https://zaibonline.com/products/yellow-luxury-embroidered-lawn-3pcs-set-npa3-26415-ready-to-wear?pr_prod_strat=collection_fallback&pr_rec_id=af587ac47&pr_rec_pid=15287214866818&pr_ref_pid=15287194386818&pr_seq=uniform",
-    "https://zaibonline.com/products/dark-blue-luxury-embroidered-lawn-3pcs-set-npa3-26414-ready-to-wear?fbclid=PAVERFWARykABleHRuA2FlbQIxMABzcnRjBmFwcF9pZA8xMjQwMjQ1NzQyODc0MTQAAackVdfeKboKPo0f1jZqXubU3EaR1jNAy8mAPsmu5k4MHx7lgOONkNo5t4rNWQ_aem_UKj6z18osL97zYA1MOQGKg&variant=56434627608962"
+    "https://zaibonline.com/products/dark-blue-luxury-embroidered-lawn-3pcs-set-npa3-26414-ready-to-wear?fbclid=PAVERFWARykABleHRuA2FlbQIxMABzcnRjBmFwcF9pZA8xMjQwMjQ1NzQyODc0MTQAAackVdfeKboKPo0f1jZqXubU3EaR1jNAy8mAPsmu5k4MHx7lgOONkNo5t4rNWQ_aem_UKj6z18osL97zYA1MOQGKg&variant=56434627608962",
+    "https://zaibonline.com/products/off-white-luxury-embroidered-lawn-3pcs-set-npa3-26412-ready-to-wear-1?pr_prod_strat=e5_desc&pr_rec_id=4ec04daf3&pr_rec_pid=15287200874882&pr_ref_pid=15287214866818&pr_seq=uniform"
   ],
-  "watchSizes": ["S", "M", "L"],
+  "watchSizes": [
+    "S",
+    "M",
+    "L"
+  ],
   "intervalMinutes": 5
 }
