@@ -1,7 +1,8 @@
 {
   "products": [
-    "https://zaibonline.com/products/yellow-luxury-embroidered-lawn-3pcs-set-npa3-26415-ready-to-wear?pr_prod_strat=collection_fallback&pr_rec_id=af587ac47&pr_rec_pid=15287214866818&pr_ref_pid=15287194386818&pr_seq=uniform"
+    "https://zaibonline.com/products/yellow-luxury-embroidered-lawn-3pcs-set-npa3-26415-ready-to-wear?pr_prod_strat=collection_fallback&pr_rec_id=af587ac47&pr_rec_pid=15287214866818&pr_ref_pid=15287194386818&pr_seq=uniform",
+    "https://zaibonline.com/products/dark-blue-luxury-embroidered-lawn-3pcs-set-npa3-26414-ready-to-wear?fbclid=PAVERFWARykABleHRuA2FlbQIxMABzcnRjBmFwcF9pZA8xMjQwMjQ1NzQyODc0MTQAAackVdfeKboKPo0f1jZqXubU3EaR1jNAy8mAPsmu5k4MHx7lgOONkNo5t4rNWQ_aem_UKj6z18osL97zYA1MOQGKg&variant=56434627608962"
   ],
-  "watchSizes": ["XS", "S", "M", "L", "XL", "XXL"],
-  "intervalMinutes": 1
+  "watchSizes": ["S", "M", "L"],
+  "intervalMinutes": 5
 }
