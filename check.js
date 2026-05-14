@@ -225,6 +225,7 @@ async function checkProduct(productUrl, state) {
         `[${ts}] [${handle}] ALERT EMAIL FAILED for size ${nowAvailable.join(", ")} ` +
           `after all retries: ${err.message}`
       );
+      process.exitCode = 1; // makes the GitHub Actions job turn RED so failure is visible
     }
   }
 }
@@ -245,10 +246,12 @@ if (TEST_MODE) {
   process.exit(process.exitCode || 0);
 }
 
+if (!smtpOk && ONCE_MODE) {
+  console.error(`[${now()}] SMTP failed — aborting.`);
+  process.exit(1);
+}
 if (!smtpOk) {
-  console.error(
-    `[${now()}] Continuing anyway — emails will fail until creds are fixed.`
-  );
+  console.error(`[${now()}] Continuing anyway — emails will fail until creds are fixed.`);
 }
 
 // GitHub Actions (cron) runs one check and exits. The schedule controls cadence.

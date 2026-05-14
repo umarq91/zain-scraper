@@ -18,7 +18,8 @@
       "Bash(node check.js --once)",
       "Bash(echo \"exit=$?\")",
       "Bash(npx tsc *)",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(curl -s https://zaibonline.com/products/__TRACKED_VAR__.js)"
     ]
   }
 }
