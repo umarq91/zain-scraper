@@ -202,14 +202,13 @@ async function checkProduct(productUrl, state) {
     }
   }
 
-  const prev = state[handle] || {};
   const cur = {};
   const nowAvailable = [];
   for (const s of want) {
     if (!(s in availBySize)) continue; // size not offered on this product
     const isAvail = availBySize[s];
-    if (isAvail && prev[s] !== true) nowAvailable.push(s);
-    cur[s] = isAvail; // record current so we only alert on the flip
+    if (isAvail) nowAvailable.push(s); // alert every run while in stock
+    cur[s] = isAvail;
   }
   state[handle] = cur;
 
@@ -222,13 +221,10 @@ async function checkProduct(productUrl, state) {
     try {
       await sendStockEmail(data.title, nowAvailable, productUrl);
     } catch (err) {
-      // All retries exhausted — log loudly but keep the loop alive. Roll back
-      // state for the failed sizes so the next poll re-attempts the email.
       console.error(
         `[${ts}] [${handle}] ALERT EMAIL FAILED for size ${nowAvailable.join(", ")} ` +
           `after all retries: ${err.message}`
       );
-      for (const s of nowAvailable) cur[s] = false;
     }
   }
 }
