@@ -27,6 +27,25 @@ jobs:
 
       - run: npm ci
 
+      # Prints which secrets are missing WITHOUT revealing their values.
+      # Remove this step once secrets are confirmed working.
+      - name: Verify secrets are present
+        env:
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          GMAIL_TO: ${{ secrets.GMAIL_TO }}
+        run: |
+          missing=0
+          for v in GMAIL_USER GMAIL_APP_PASSWORD GMAIL_TO; do
+            if [[ -z "${!v}" ]]; then
+              echo "MISSING: $v is not set"
+              missing=1
+            else
+              echo "OK: $v is set (length ${#v})"
+            fi
+          done
+          exit $missing
+
       - name: Check stock
         env:
           GMAIL_USER: ${{ secrets.GMAIL_USER }}
