@@ -1,14 +1,24 @@
 import express from "express";
-import cron from "node-cron";
-import { check, verifyTransport, now } from "./lib/checker.js";
+import { check, getMinIntervalMinutes, verifyTransport, now } from "./lib/checker.js";
 
 const app = express();
 app.use(express.json());
 
 const PORT = process.env.PORT || 3001;
-
-// Simple token auth for the trigger endpoint
 const TRIGGER_SECRET = process.env.TRIGGER_SECRET;
+const MIN_INTERVAL_MS = 60_000; // hard floor: 1 minute
+
+let scheduleTimer = null;
+
+async function scheduleNext() {
+  const intervalMin = await getMinIntervalMinutes();
+  const intervalMs = Math.max(MIN_INTERVAL_MS, intervalMin * 60_000);
+  console.log(`[${now()}] Next check in ${intervalMin} min`);
+  scheduleTimer = setTimeout(async () => {
+    await check().catch((err) => console.error(`[${now()}] Check error: ${err.message}`));
+    scheduleNext();
+  }, intervalMs);
+}
 
 app.get("/health", (_req, res) => {
   res.json({ ok: true, time: now() });
@@ -18,15 +28,8 @@ app.post("/trigger", async (req, res) => {
   if (TRIGGER_SECRET && req.headers["x-trigger-secret"] !== TRIGGER_SECRET) {
     return res.status(401).json({ error: "Unauthorized" });
   }
-  // Fire and forget — don't wait for check to finish
   check().catch((err) => console.error(`[${now()}] Trigger error: ${err.message}`));
   res.json({ ok: true, message: "Check started" });
-});
-
-// Cron: every 5 minutes
-cron.schedule("*/5 * * * *", () => {
-  console.log(`[${now()}] Cron tick — running check`);
-  check().catch((err) => console.error(`[${now()}] Cron error: ${err.message}`));
 });
 
 const smtpOk = await verifyTransport();
@@ -34,10 +37,9 @@ if (!smtpOk) {
   console.error(`[${now()}] WARNING: SMTP not working — emails will fail`);
 }
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`[${now()}] Server running on :${PORT}`);
-  console.log(`[${now()}] Cron active — checking every 5 minutes`);
+  // Run immediately on startup, then schedule dynamically
+  await check().catch((err) => console.error(`[${now()}] Startup check error: ${err.message}`));
+  scheduleNext();
 });
-
-// Run one check immediately on startup
-check().catch((err) => console.error(`[${now()}] Startup check error: ${err.message}`));

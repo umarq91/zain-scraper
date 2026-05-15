@@ -70,16 +70,17 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchData();
-    const id = setInterval(fetchData, 30_000);
+    const intervalMs = Math.max(30_000, (data?.interval_minutes ?? 5) * 60_000);
+    const id = setInterval(fetchData, intervalMs);
     return () => clearInterval(id);
-  }, [fetchData]);
+  }, [fetchData, data?.interval_minutes]);
 
   async function triggerCheck() {
     setTriggering(true);
     setTriggerMsg("");
     try {
       const res = await fetch("/api/trigger", { method: "POST" });
-      setTriggerMsg(res.ok ? "Scan started — refresh in 30 seconds." : "Could not start scan.");
+      setTriggerMsg(res.ok ? `Scan started — results in ~${data?.interval_minutes ?? 5} min.` : "Could not start scan.");
     } catch {
       setTriggerMsg("Could not start scan.");
     } finally {
@@ -185,7 +186,7 @@ export default function Dashboard() {
             <div className="flex items-center justify-between mb-8 bg-paper-pure px-4 py-3 border border-grid-line -mx-1">
               <div className="flex items-center gap-4">
                 <span className="font-mono text-[0.6rem] tracking-[0.12em] uppercase text-ink-soft">
-                  Checking automatically every 5 min
+                  Checking every {data.interval_minutes} min
                 </span>
                 {data.products.length > 0 && (
                   <>

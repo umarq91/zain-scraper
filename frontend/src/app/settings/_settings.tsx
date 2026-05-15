@@ -55,17 +55,19 @@ export default function SettingsPage() {
   const router = useRouter();
   const supabase = createClient();
   const [products, setProducts] = useState<Product[]>([]);
-  const [settings, setSettings] = useState<UserSettings>({ email_to: "" });
+  const [settings, setSettings] = useState<UserSettings>({ email_to: "", interval_minutes: 5 });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<Msg | null>(null);
   const [addMode, setAddMode] = useState<"single" | "bulk">("single");
   const [newUrl, setNewUrl] = useState("");
   const [newUrlSizes, setNewUrlSizes] = useState<string[]>(["M", "L"]);
+  const [newUrlNotifyMode, setNewUrlNotifyMode] = useState<"once" | "always">("once");
   const [addingProduct, setAddingProduct] = useState(false);
   const [bulkInput, setBulkInput] = useState("");
   const [bulkUrls, setBulkUrls] = useState<string[]>([]);
   const [bulkSizes, setBulkSizes] = useState<string[]>(["M", "L"]);
+  const [bulkNotifyMode, setBulkNotifyMode] = useState<"once" | "always">("once");
   const [bulkProgress, setBulkProgress] = useState<{ done: number; total: number; current: string } | null>(null);
   const [bulkResult, setBulkResult] = useState<{ added: number; failed: string[] } | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -79,9 +81,9 @@ export default function SettingsPage() {
     if (pRes.ok) setProducts(await pRes.json());
     if (sRes.ok) {
       const s = await sRes.json();
-      setSettings({ email_to: s.email_to || user?.email || "" });
+      setSettings({ email_to: s.email_to || user?.email || "", interval_minutes: s.interval_minutes ?? 5 });
     } else if (user?.email) {
-      setSettings({ email_to: user.email });
+      setSettings({ email_to: user.email, interval_minutes: 5 });
     }
     setLoading(false);
   }, [supabase]);
@@ -115,13 +117,14 @@ export default function SettingsPage() {
     const res = await fetch("/api/products", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url, watch_sizes: newUrlSizes }),
+      body: JSON.stringify({ url, watch_sizes: newUrlSizes, notify_mode: newUrlNotifyMode }),
     });
     if (res.ok) {
       const added = await res.json();
       setProducts((prev) => [...prev, added]);
       setNewUrl("");
       setNewUrlSizes(["M", "L"]);
+      setNewUrlNotifyMode("once");
     } else {
       const json = await res.json();
       setMsg({ type: "error", text: json.error ?? "Could not add product." });
@@ -174,7 +177,7 @@ export default function SettingsPage() {
       const res = await fetch("/api/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: bulkUrls[i], watch_sizes: bulkSizes }),
+        body: JSON.stringify({ url: bulkUrls[i], watch_sizes: bulkSizes, notify_mode: bulkNotifyMode }),
       });
       if (res.ok) {
         const p = await res.json();
@@ -263,12 +266,38 @@ export default function SettingsPage() {
             />
           </div>
 
+          <div className="mb-6">
+            <label className="block font-mono text-[0.6rem] tracking-[0.1em] uppercase text-ink-soft mb-1.5">
+              Check Interval
+            </label>
+            <div className="grid grid-cols-3 gap-0 border border-ink overflow-hidden">
+              {[1, 2, 5, 10, 15, 30].map((min) => {
+                const active = settings.interval_minutes === min;
+                return (
+                  <button
+                    key={min}
+                    type="button"
+                    onClick={() => setSettings((s) => ({ ...s, interval_minutes: min }))}
+                    className={`font-mono text-[0.6rem] tracking-[0.06em] uppercase py-2 border-b border-r border-ink transition-colors last:border-r-0 ${
+                      active ? "bg-ink text-paper" : "text-ink-soft hover:text-ink bg-paper-pure"
+                    }`}
+                  >
+                    {min} min
+                  </button>
+                );
+              })}
+            </div>
+            <p className="font-mono text-[0.52rem] text-ink-soft opacity-40 mt-1.5">
+              How often we check your products for size availability
+            </p>
+          </div>
+
           <button
             onClick={saveSettings}
             disabled={saving}
             className="w-full py-3 font-mono text-[0.65rem] tracking-[0.1em] uppercase disabled:opacity-40 bg-ink text-paper shadow-hard-sm hover-lift transition-colors"
           >
-            {saving ? "Saving…" : "Save Alert Email →"}
+            {saving ? "Saving…" : "Save Settings →"}
           </button>
 
           {msg && (
@@ -450,6 +479,32 @@ export default function SettingsPage() {
                     </div>
                   </div>
 
+                  {/* Notify mode */}
+                  <div className="flex items-center gap-3 mb-5">
+                    <p className="font-mono text-[0.6rem] tracking-[0.1em] uppercase text-ink-soft flex-shrink-0">
+                      Notify me
+                    </p>
+                    <div className="flex border border-ink overflow-hidden">
+                      {(["once", "always"] as const).map((mode) => (
+                        <button
+                          key={mode}
+                          type="button"
+                          onClick={() => setNewUrlNotifyMode(mode)}
+                          className={`font-mono text-[0.6rem] tracking-[0.08em] uppercase px-3 py-1.5 transition-colors ${
+                            newUrlNotifyMode === mode
+                              ? "bg-ink text-paper"
+                              : "text-ink-soft hover:text-ink"
+                          }`}
+                        >
+                          {mode === "once" ? "Once" : `Every ${settings.interval_minutes} min`}
+                        </button>
+                      ))}
+                    </div>
+                    <p className="font-mono text-[0.52rem] text-ink-soft opacity-40">
+                      {newUrlNotifyMode === "once" ? "One alert per restock" : `Alert every ${settings.interval_minutes} min while in stock`}
+                    </p>
+                  </div>
+
                   <button
                     onClick={addProduct}
                     disabled={addingProduct || !newUrl.trim()}
@@ -615,6 +670,33 @@ export default function SettingsPage() {
                     </div>
                   </div>
 
+                  {/* Notify mode */}
+                  <div className="flex items-center gap-3 mb-5">
+                    <p className="font-mono text-[0.6rem] tracking-[0.1em] uppercase text-ink-soft flex-shrink-0">
+                      Notify me
+                    </p>
+                    <div className="flex border border-ink overflow-hidden">
+                      {(["once", "always"] as const).map((mode) => (
+                        <button
+                          key={mode}
+                          type="button"
+                          disabled={!!bulkProgress}
+                          onClick={() => setBulkNotifyMode(mode)}
+                          className={`font-mono text-[0.6rem] tracking-[0.08em] uppercase px-3 py-1.5 transition-colors disabled:opacity-40 ${
+                            bulkNotifyMode === mode
+                              ? "bg-ink text-paper"
+                              : "text-ink-soft hover:text-ink"
+                          }`}
+                        >
+                          {mode === "once" ? "Once" : `Every ${settings.interval_minutes} min`}
+                        </button>
+                      ))}
+                    </div>
+                    <p className="font-mono text-[0.52rem] text-ink-soft opacity-40">
+                      {bulkNotifyMode === "once" ? "One alert per restock" : `Alert every ${settings.interval_minutes} min while in stock`}
+                    </p>
+                  </div>
+
                   {/* Progress bar */}
                   {bulkProgress && (
                     <div className="mb-4 border border-grid-line bg-paper px-3 py-2.5">
@@ -671,13 +753,15 @@ export default function SettingsPage() {
                   style={{ background: settings.email_to ? "var(--accent)" : "var(--grid-line)" }}
                 />
                 <span className="font-mono text-[0.6rem] tracking-[0.1em] uppercase">
-                  Alert Email
+                  Alert Settings
                 </span>
-                {settings.email_to && (
-                  <span className="font-mono text-[0.58rem] text-ink-soft opacity-50 truncate max-w-[180px]">
-                    {settings.email_to}
-                  </span>
-                )}
+                <span className="font-mono text-[0.58rem] text-ink-soft opacity-40">
+                  {settings.email_to || "no email set"}
+                </span>
+                <span className="font-mono text-[0.55rem] text-ink-soft opacity-30">·</span>
+                <span className="font-mono text-[0.58rem] text-ink-soft opacity-40">
+                  every {settings.interval_minutes} min
+                </span>
               </div>
               <span className="font-mono text-[0.6rem] tracking-widest uppercase text-ink-soft group-hover:text-accent transition-colors">
                 Configure →
@@ -816,7 +900,7 @@ export default function SettingsPage() {
                           </div>
 
                           {/* Size toggles */}
-                          <div>
+                          <div className="mb-4">
                             <p className="font-mono text-[0.52rem] tracking-[0.1em] uppercase text-ink-soft opacity-40 mb-2">
                               Watching sizes
                             </p>
@@ -839,6 +923,47 @@ export default function SettingsPage() {
                                 );
                               })}
                             </div>
+                          </div>
+
+                          {/* Notify mode toggle */}
+                          <div className="flex items-center gap-3">
+                            <p className="font-mono text-[0.52rem] tracking-[0.1em] uppercase text-ink-soft opacity-40 flex-shrink-0">
+                              Notify
+                            </p>
+                            <div className="flex border border-grid-line overflow-hidden">
+                              {(["once", "always"] as const).map((mode) => {
+                                const active = (product.notify_mode ?? "once") === mode;
+                                return (
+                                  <button
+                                    key={mode}
+                                    onClick={async () => {
+                                      setProducts((prev) =>
+                                        prev.map((p) =>
+                                          p.id === product.id ? { ...p, notify_mode: mode } : p
+                                        )
+                                      );
+                                      await fetch(`/api/products/${product.id}`, {
+                                        method: "PATCH",
+                                        headers: { "Content-Type": "application/json" },
+                                        body: JSON.stringify({ notify_mode: mode }),
+                                      });
+                                    }}
+                                    className={`font-mono text-[0.55rem] tracking-[0.08em] uppercase px-3 py-1 transition-colors ${
+                                      active
+                                        ? "bg-ink text-paper"
+                                        : "text-ink-soft hover:text-ink bg-paper-pure"
+                                    }`}
+                                  >
+                                    {mode === "once" ? "Once" : `Every ${settings.interval_minutes} min`}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                            <p className="font-mono text-[0.5rem] text-ink-soft opacity-30 leading-tight">
+                              {(product.notify_mode ?? "once") === "once"
+                                ? "Alert once per restock"
+                                : `Alert every ${settings.interval_minutes} min while in stock`}
+                            </p>
                           </div>
                         </div>
                       </div>

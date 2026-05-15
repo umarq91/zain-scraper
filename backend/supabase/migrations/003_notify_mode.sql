@@ -1,0 +1,2 @@
+ALTER TABLE products
+  ADD COLUMN IF NOT EXISTS notify_mode TEXT NOT NULL DEFAULT 'once';

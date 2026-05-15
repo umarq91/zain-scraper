@@ -19,13 +19,24 @@ export async function GET() {
     } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const { data: products, error: prodError } = await supabase
-      .from("products")
-      .select("id, url, handle, watch_sizes, image_url, is_paused")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: true });
+    const [
+      { data: products, error: prodError },
+      { data: userSettings },
+    ] = await Promise.all([
+      supabase
+        .from("products")
+        .select("id, url, handle, watch_sizes, image_url, is_paused, notify_mode")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: true }),
+      supabase
+        .from("user_settings")
+        .select("interval_minutes")
+        .eq("user_id", user.id)
+        .single(),
+    ]);
 
     if (prodError) throw prodError;
+    const interval_minutes: number = userSettings?.interval_minutes ?? 5;
 
     const productIds = (products ?? []).map((p) => p.id);
     let stateMap: Record<string, Record<string, boolean>> = {};
@@ -56,12 +67,14 @@ export async function GET() {
         image_url: p.image_url ?? null,
         watch_sizes: p.watch_sizes,
         is_paused: p.is_paused ?? false,
+        notify_mode: (p.notify_mode ?? "once") as "once" | "always",
         sizes,
       };
     });
 
     const data: DashboardData = {
       products: productsWithState,
+      interval_minutes,
     };
 
     return NextResponse.json(data);

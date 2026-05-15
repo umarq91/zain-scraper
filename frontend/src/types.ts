@@ -1,5 +1,6 @@
 export type UserSettings = {
   email_to: string;
+  interval_minutes: number;
 };
 
 export type Product = {
@@ -9,6 +10,7 @@ export type Product = {
   watch_sizes: string[];
   image_url?: string | null;
   is_paused: boolean;
+  notify_mode: "once" | "always";
   created_at?: string;
 };
 
@@ -20,4 +22,5 @@ export type ProductWithState = Product & {
 
 export type DashboardData = {
   products: ProductWithState[];
+  interval_minutes: number;
 };
