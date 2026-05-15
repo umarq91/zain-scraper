@@ -1,16 +1,7 @@
 import { NextResponse } from "next/server";
-import { getFile } from "@/lib/github";
-import type { Config, StockState, DashboardData, ProductStock } from "@/types";
-
-function handleFromUrl(url: string): string {
-  try {
-    const u = new URL(url);
-    const m = u.pathname.match(/\/products\/([^/]+)/);
-    return m ? m[1] : u.pathname;
-  } catch {
-    return url;
-  }
-}
+import { cookies } from "next/headers";
+import { createClient } from "@/utils/supabase/server";
+import type { DashboardData, ProductWithState } from "@/types";
 
 function nameFromHandle(handle: string): string {
   return handle
@@ -21,32 +12,62 @@ function nameFromHandle(handle: string): string {
 
 export async function GET() {
   try {
-    const { data: config } = await getFile<Config>("config.json");
+    const cookieStore = await cookies();
+    const supabase = createClient(cookieStore);
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    let state: StockState = {};
-    try {
-      const result = await getFile<StockState>("state.json");
-      state = result.data;
-    } catch {
-      // state.json not yet created — first run hasn't happened
+    const [{ data: products, error: prodError }, { data: settings }] = await Promise.all([
+      supabase
+        .from("products")
+        .select("id, url, handle, watch_sizes")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: true }),
+      supabase
+        .from("user_settings")
+        .select("interval_minutes")
+        .eq("user_id", user.id)
+        .single(),
+    ]);
+
+    if (prodError) throw prodError;
+
+    const productIds = (products ?? []).map((p) => p.id);
+    let stateMap: Record<string, Record<string, boolean>> = {};
+
+    if (productIds.length > 0) {
+      const { data: states } = await supabase
+        .from("product_state")
+        .select("product_id, size, available")
+        .in("product_id", productIds);
+
+      for (const s of states ?? []) {
+        if (!stateMap[s.product_id]) stateMap[s.product_id] = {};
+        stateMap[s.product_id][s.size] = s.available;
+      }
     }
 
-    const watchSizes = (config.watchSizes ?? []).map((s: string) => s.toUpperCase());
-
-    const products: ProductStock[] = (config.products ?? []).map((url: string) => {
-      const handle = handleFromUrl(url);
-      const productState = state[handle] ?? {};
+    const productsWithState: ProductWithState[] = (products ?? []).map((p) => {
+      const state = stateMap[p.id] ?? {};
       const sizes: { [size: string]: boolean | null } = {};
-      for (const s of watchSizes) {
-        sizes[s] = s in productState ? productState[s] : null;
+      for (const s of p.watch_sizes) {
+        sizes[s] = s in state ? state[s] : null;
       }
-      return { url, handle, name: nameFromHandle(handle), sizes };
+      return {
+        id: p.id,
+        url: p.url,
+        handle: p.handle,
+        name: nameFromHandle(p.handle),
+        watch_sizes: p.watch_sizes,
+        sizes,
+      };
     });
 
     const data: DashboardData = {
-      products,
-      watchSizes,
-      intervalMinutes: config.intervalMinutes ?? 5,
+      products: productsWithState,
+      intervalMinutes: settings?.interval_minutes ?? 5,
     };
 
     return NextResponse.json(data);

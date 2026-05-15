@@ -4,11 +4,14 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "start": "node check.js",
-    "once": "node check.js --once",
+    "server": "node server.js",
+    "once": "node check.js",
     "test:email": "node check.js --test"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.105.4",
+    "express": "^5.2.1",
+    "node-cron": "^4.2.1",
     "nodemailer": "^8.0.7"
   }
 }

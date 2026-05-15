@@ -1,24 +1,22 @@
-export type Config = {
-  products: string[];
-  watchSizes: string[];
-  intervalMinutes: number;
+export type UserSettings = {
+  email_to: string;
+  interval_minutes: number;
 };
 
-export type StockState = {
-  [handle: string]: {
-    [size: string]: boolean;
-  };
-};
-
-export type ProductStock = {
+export type Product = {
+  id: string;
   url: string;
   handle: string;
+  watch_sizes: string[];
+  created_at?: string;
+};
+
+export type ProductWithState = Product & {
   name: string;
   sizes: { [size: string]: boolean | null };
 };
 
 export type DashboardData = {
-  products: ProductStock[];
-  watchSizes: string[];
+  products: ProductWithState[];
   intervalMinutes: number;
 };
