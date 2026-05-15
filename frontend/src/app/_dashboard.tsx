@@ -232,13 +232,17 @@ export default function Dashboard() {
                   const total = Object.keys(product.sizes).length;
                   const hasAny = available > 0;
                   const allUnknown = Object.values(product.sizes).every((v) => v === null);
+                  const isPaused = product.is_paused ?? false;
                   const initial = product.name.charAt(0).toUpperCase();
 
                   return (
                     <div
                       key={product.id}
                       className="relative bg-paper-pure border border-ink overflow-hidden flex flex-col"
-                      style={{ boxShadow: hasAny ? "4px 4px 0 var(--accent)" : "4px 4px 0 #0A0A0A" }}
+                      style={{
+                        boxShadow: isPaused ? "4px 4px 0 var(--grid-line)" : hasAny ? "4px 4px 0 var(--accent)" : "4px 4px 0 #0A0A0A",
+                        opacity: isPaused ? 0.65 : 1,
+                      }}
                     >
                       {/* Image / Fallback — always shown */}
                       <div className="relative h-64 border-b border-grid-line flex-shrink-0">
@@ -271,14 +275,16 @@ export default function Dashboard() {
                         <span
                           className="absolute top-3 left-3 font-mono text-[0.58rem] tracking-[0.14em] uppercase font-medium px-2 py-0.5"
                           style={
-                            allUnknown
+                            isPaused
+                              ? { background: "var(--paper)", color: "var(--ink-soft)", border: "1px solid var(--ink-soft)" }
+                              : allUnknown
                               ? { background: "var(--paper)", color: "var(--ink-soft)", border: "1px solid var(--grid-line)" }
                               : hasAny
                               ? { background: "var(--accent)", color: "var(--paper)", borderRadius: "2px", transform: "rotate(-0.3deg)", display: "inline-block" }
                               : { background: "var(--ink)", color: "var(--paper)", borderRadius: "2px" }
                           }
                         >
-                          {allUnknown ? "Not Yet Checked" : hasAny ? "In Stock" : "Sold Out"}
+                          {isPaused ? "Paused" : allUnknown ? "Not Yet Checked" : hasAny ? "In Stock" : "Sold Out"}
                         </span>
 
                         {/* View link overlaid */}

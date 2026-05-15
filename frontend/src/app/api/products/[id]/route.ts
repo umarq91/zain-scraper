@@ -14,11 +14,14 @@ export async function PATCH(
   } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { watch_sizes } = await req.json();
+  const body = await req.json();
+  const patch: Record<string, unknown> = {};
+  if ("watch_sizes" in body) patch.watch_sizes = body.watch_sizes;
+  if ("is_paused" in body) patch.is_paused = body.is_paused;
 
   const { error } = await supabase
     .from("products")
-    .update({ watch_sizes })
+    .update(patch)
     .eq("id", id)
     .eq("user_id", user.id);
 

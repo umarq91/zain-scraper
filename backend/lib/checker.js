@@ -156,7 +156,8 @@ export async function check() {
 
   const { data: products, error: pErr } = await supabase
     .from("products")
-    .select("id, url, handle, watch_sizes, user_id");
+    .select("id, url, handle, watch_sizes, user_id")
+    .eq("is_paused", false);
   if (pErr) { console.error(`[${ts}] Products fetch error: ${pErr.message}`); return; }
 
   if (!products?.length) { console.log(`[${ts}] No products to check.`); return; }

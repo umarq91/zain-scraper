@@ -21,7 +21,7 @@ export async function GET() {
 
     const { data: products, error: prodError } = await supabase
       .from("products")
-      .select("id, url, handle, watch_sizes, image_url")
+      .select("id, url, handle, watch_sizes, image_url, is_paused")
       .eq("user_id", user.id)
       .order("created_at", { ascending: true });
 
@@ -55,6 +55,7 @@ export async function GET() {
         name: nameFromHandle(p.handle),
         image_url: p.image_url ?? null,
         watch_sizes: p.watch_sizes,
+        is_paused: p.is_paused ?? false,
         sizes,
       };
     });

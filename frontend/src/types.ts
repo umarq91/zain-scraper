@@ -8,6 +8,7 @@ export type Product = {
   handle: string;
   watch_sizes: string[];
   image_url?: string | null;
+  is_paused: boolean;
   created_at?: string;
 };
 
