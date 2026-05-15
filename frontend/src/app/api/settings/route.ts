@@ -12,7 +12,7 @@ export async function GET() {
 
   const { data, error } = await supabase
     .from("user_settings")
-    .select("email_to, interval_minutes")
+    .select("email_to")
     .eq("user_id", user.id)
     .single();
 
@@ -21,7 +21,7 @@ export async function GET() {
   }
 
   return NextResponse.json(
-    data ?? { email_to: user.email ?? "", interval_minutes: 5 }
+    data ?? { email_to: user.email ?? "" }
   );
 }
 
@@ -33,12 +33,11 @@ export async function PUT(req: Request) {
   } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { email_to, interval_minutes } = await req.json();
+  const { email_to } = await req.json();
 
   const { error } = await supabase.from("user_settings").upsert({
     user_id: user.id,
     email_to: email_to ?? "",
-    interval_minutes: interval_minutes ?? 5,
     updated_at: new Date().toISOString(),
   });
 

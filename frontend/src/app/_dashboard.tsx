@@ -7,19 +7,47 @@ import { createClient } from "@/utils/supabase/client";
 import type { DashboardData } from "@/types";
 
 function cleanUrl(url: string): string {
-  try {
-    const u = new URL(url);
-    u.search = "";
-    return u.toString();
-  } catch {
-    return url;
+  try { const u = new URL(url); u.search = ""; return u.toString(); }
+  catch { return url; }
+}
+
+function Bracket({ pos }: { pos: "tl" | "tr" | "bl" | "br" }) {
+  const t = { tl: "", tr: "scaleX(-1)", bl: "scaleY(-1)", br: "scale(-1,-1)" }[pos];
+  return (
+    <svg width="22" height="22" viewBox="0 0 40 40" aria-hidden="true" style={{ display: "block", transform: t }}>
+      <path d="M2 16 L2 2 L16 2" fill="none" stroke="#0A0A0A" strokeWidth="2.5" />
+    </svg>
+  );
+}
+
+function SizeBadge({ size, avail }: { size: string; avail: boolean | null }) {
+  if (avail === null) {
+    return (
+      <span className="font-mono text-[0.65rem] tracking-widest uppercase px-2.5 py-1 border border-grid-line text-ink-soft bg-paper">
+        {size}
+      </span>
+    );
   }
+  if (avail) {
+    return (
+      <span
+        className="font-mono text-[0.65rem] tracking-widest uppercase px-2.5 py-1 font-medium"
+        style={{ background: "var(--accent)", color: "var(--paper)", borderRadius: "2px", transform: "rotate(-0.3deg)", display: "inline-block" }}
+      >
+        {size}
+      </span>
+    );
+  }
+  return (
+    <span className="font-mono text-[0.65rem] tracking-widest uppercase px-2.5 py-1 border border-ink text-ink-soft bg-paper line-through opacity-40">
+      {size}
+    </span>
+  );
 }
 
 export default function Dashboard() {
   const router = useRouter();
   const supabase = createClient();
-
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -51,9 +79,9 @@ export default function Dashboard() {
     setTriggerMsg("");
     try {
       const res = await fetch("/api/trigger", { method: "POST" });
-      setTriggerMsg(res.ok ? "Check triggered — results in ~30s." : "Failed to trigger.");
+      setTriggerMsg(res.ok ? "Scan started — refresh in 30 seconds." : "Could not start scan.");
     } catch {
-      setTriggerMsg("Failed to trigger.");
+      setTriggerMsg("Could not start scan.");
     } finally {
       setTriggering(false);
     }
@@ -65,121 +93,201 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen">
-      <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-        <h1 className="text-lg font-semibold text-gray-900">Stock Watcher</h1>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={triggerCheck}
-            disabled={triggering}
-            className="px-3 py-1.5 text-sm bg-gray-900 text-white rounded-md hover:bg-gray-700 disabled:opacity-50 transition-colors"
-          >
-            {triggering ? "Triggering…" : "Check Now"}
-          </button>
-          <Link
-            href="/settings"
-            className="px-3 py-1.5 text-sm border border-gray-300 rounded-md hover:bg-gray-50 text-gray-700 transition-colors"
-          >
-            Settings
-          </Link>
-          <button
-            onClick={signOut}
-            className="px-3 py-1.5 text-sm text-gray-500 hover:text-gray-900 transition-colors"
-          >
-            Sign out
-          </button>
+    <div className="min-h-screen bg-grid">
+      {/* Header */}
+      <header className="bg-paper-pure border-b border-ink sticky top-0 z-20" style={{ boxShadow: "0 2px 0 #0A0A0A" }}>
+        <div className="max-w-5xl mx-auto px-6 py-0 flex items-stretch">
+          {/* Logo */}
+          <div className="py-4 pr-6 border-r border-ink flex items-center gap-3">
+            <div>
+              <span className="font-display font-bold text-ink" style={{ fontSize: "1.2rem", letterSpacing: "-0.02em" }}>
+                StockWatch
+              </span>
+              <span className="block font-mono text-[0.55rem] tracking-[0.12em] uppercase text-ink-soft opacity-60 leading-none mt-0.5">
+                your size radar
+              </span>
+            </div>
+          </div>
+
+          {/* Nav actions */}
+          <div className="ml-auto flex items-center gap-0">
+            <button
+              onClick={triggerCheck}
+              disabled={triggering}
+              className="h-full px-5 font-mono text-[0.65rem] tracking-[0.08em] uppercase border-l border-ink text-ink hover:bg-accent hover:text-paper transition-colors disabled:opacity-40"
+            >
+              {triggering ? "Scanning…" : "Scan Now"}
+            </button>
+            <Link
+              href="/settings"
+              className="h-full px-5 flex items-center font-mono text-[0.65rem] tracking-[0.08em] uppercase border-l border-ink text-ink hover:bg-ink hover:text-paper transition-colors"
+            >
+              My Products
+            </Link>
+            <button
+              onClick={signOut}
+              className="h-full px-5 font-mono text-[0.65rem] tracking-[0.08em] uppercase border-l border-ink text-ink-soft hover:text-ink transition-colors"
+            >
+              Sign Out
+            </button>
+          </div>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-6 py-8">
+      <main className="max-w-5xl mx-auto px-6 py-10">
+        {/* Trigger message */}
         {triggerMsg && (
-          <div className="mb-5 px-4 py-2.5 bg-blue-50 text-blue-700 rounded-md text-sm">
+          <div className="mb-6 px-4 py-3 border border-ink bg-paper-pure font-body text-sm shadow-hard-sm flex items-center gap-3">
+            <span
+              className="font-display italic font-bold text-xs px-1.5 py-0.5"
+              style={{ background: "var(--accent)", color: "var(--paper)", borderRadius: "2px" }}
+            >
+              Info
+            </span>
             {triggerMsg}
           </div>
         )}
 
-        {loading && <p className="text-sm text-gray-400">Loading…</p>}
+        {loading && (
+          <div className="flex items-center gap-3 py-24 justify-center">
+            <span className="font-mono text-[0.65rem] tracking-widest uppercase text-ink-soft animate-pulse">
+              Loading…
+            </span>
+          </div>
+        )}
 
         {!loading && error && (
-          <div className="px-4 py-3 bg-red-50 text-red-700 rounded-md text-sm">{error}</div>
+          <div className="px-4 py-3 border border-red-700 bg-paper-pure text-red-700 font-body text-sm shadow-hard-sm">
+            {error}
+          </div>
         )}
 
         {data && (
           <>
-            <div className="flex items-center justify-between mb-6">
-              <p className="text-sm text-gray-500">
-                Checks every {data.intervalMinutes} min via GitHub Actions
-              </p>
-              <button onClick={fetchData} className="text-sm text-blue-600 hover:underline">
-                Refresh
+            {/* Status strip */}
+            <div className="flex items-center justify-between mb-8 bg-paper-pure px-4 py-3 border border-grid-line -mx-1">
+              <div className="flex items-center gap-4">
+                <span className="font-mono text-[0.6rem] tracking-[0.12em] uppercase text-ink-soft">
+                  Checking automatically every 5 min
+                </span>
+                {data.products.length > 0 && (
+                  <>
+                    <span className="text-grid-line">·</span>
+                    <span className="font-mono text-[0.6rem] tracking-[0.12em] uppercase text-ink-soft">
+                      {data.products.length} product{data.products.length !== 1 ? "s" : ""} tracked
+                    </span>
+                  </>
+                )}
+              </div>
+              <button onClick={fetchData} className="font-mono text-[0.6rem] tracking-widest uppercase text-ink-soft hover:text-accent transition-colors">
+                Refresh ↺
               </button>
             </div>
 
             {data.products.length === 0 ? (
-              <div className="text-center py-16 text-gray-400">
-                <p className="text-sm">No products configured.</p>
+              /* Empty state */
+              <div className="bg-paper-pure border border-ink p-12 shadow-hard-lg relative flex flex-col items-center justify-center text-center">
+                <span className="absolute top-3 left-3 opacity-30"><Bracket pos="tl" /></span>
+                <span className="absolute top-3 right-3 opacity-30"><Bracket pos="tr" /></span>
+                <span className="absolute bottom-3 left-3 opacity-30"><Bracket pos="bl" /></span>
+                <span className="absolute bottom-3 right-3 opacity-30"><Bracket pos="br" /></span>
+
+                <p className="font-display italic text-ink-soft mb-2" style={{ fontSize: "1.1rem", fontWeight: 500 }}>
+                  you&apos;re not watching anything yet
+                </p>
+                <h2 className="font-display font-bold text-ink mb-3" style={{ fontSize: "clamp(2rem, 5vw, 3rem)", letterSpacing: "-0.02em", lineHeight: 1 }}>
+                  Add your first product
+                </h2>
+                <p className="font-body text-sm text-ink-soft mb-8 max-w-xs">
+                  Paste a product link, pick your sizes, and we&apos;ll email you the second it comes back in stock.
+                </p>
                 <Link
                   href="/settings"
-                  className="text-blue-600 hover:underline text-sm mt-1 inline-block"
+                  className="inline-block px-6 py-3 bg-ink text-paper font-mono text-[0.65rem] tracking-[0.1em] uppercase shadow-hard-sm hover-lift"
                 >
-                  Add products in Settings →
+                  Start Watching →
                 </Link>
               </div>
             ) : (
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-6 sm:grid-cols-2">
                 {data.products.map((product) => {
                   const available = Object.values(product.sizes).filter(Boolean).length;
                   const total = Object.keys(product.sizes).length;
                   const hasAny = available > 0;
+                  const allUnknown = Object.values(product.sizes).every((v) => v === null);
 
                   return (
                     <div
                       key={product.id}
-                      className={`bg-white rounded-xl border p-5 ${
-                        hasAny ? "border-green-200" : "border-gray-200"
-                      }`}
+                      className="relative bg-paper-pure border border-ink p-5"
+                      style={{ boxShadow: hasAny ? "4px 4px 0 var(--accent)" : "4px 4px 0 #0A0A0A" }}
                     >
-                      <div className="flex items-start justify-between gap-3 mb-4">
-                        <h2 className="text-sm font-medium text-gray-900 leading-snug line-clamp-2">
-                          {product.name}
-                        </h2>
+                      {/* Corner bracket */}
+                      <span className="absolute top-0 left-0 translate-x-[-1px] translate-y-[-1px] opacity-30">
+                        <Bracket pos="tl" />
+                      </span>
+
+                      {/* Status label */}
+                      <div className="flex items-center justify-between mb-4">
+                        <span
+                          className="font-mono text-[0.58rem] tracking-[0.14em] uppercase font-medium px-2 py-0.5"
+                          style={
+                            allUnknown
+                              ? { background: "var(--grid-line)", color: "var(--ink-soft)", borderRadius: "2px" }
+                              : hasAny
+                              ? { background: "var(--accent)", color: "var(--paper)", borderRadius: "2px", transform: "rotate(-0.3deg)", display: "inline-block" }
+                              : { background: "var(--ink)", color: "var(--paper)", borderRadius: "2px" }
+                          }
+                        >
+                          {allUnknown ? "Not Yet Checked" : hasAny ? "In Stock" : "Sold Out"}
+                        </span>
                         <a
                           href={cleanUrl(product.url)}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex-shrink-0 text-xs text-blue-600 hover:underline whitespace-nowrap"
+                          className="font-mono text-[0.58rem] tracking-widest uppercase text-ink-soft hover:text-accent transition-colors"
                         >
                           View ↗
                         </a>
                       </div>
 
+                      {/* Product name */}
+                      <h2
+                        className="font-display font-bold text-ink mb-1 leading-tight line-clamp-2"
+                        style={{ fontSize: "1.1rem", letterSpacing: "-0.01em" }}
+                      >
+                        {product.name}
+                      </h2>
+
+                      {/* URL */}
+                      <p className="font-mono text-[0.6rem] text-ink-soft opacity-50 truncate mb-4">
+                        {product.url.replace(/^https?:\/\//, "").replace(/\/products\/.*/, "")}
+                      </p>
+
+                      {/* Size badges */}
                       {product.watch_sizes.length === 0 ? (
-                        <p className="text-xs text-gray-400 mb-3">No sizes configured.</p>
+                        <p className="font-mono text-[0.6rem] uppercase tracking-widest text-ink-soft opacity-40">
+                          No sizes selected — <Link href="/settings" className="underline hover:text-accent">pick some</Link>
+                        </p>
                       ) : (
-                        <div className="flex flex-wrap gap-1.5 mb-3">
-                          {product.watch_sizes.map((size) => {
-                            const avail = product.sizes[size];
-                            return (
-                              <span
-                                key={size}
-                                className={`px-2.5 py-1 text-xs font-medium rounded-full ${
-                                  avail === null
-                                    ? "bg-gray-100 text-gray-400"
-                                    : avail
-                                    ? "bg-green-100 text-green-700"
-                                    : "bg-red-50 text-red-400"
-                                }`}
-                              >
-                                {size}
-                              </span>
-                            );
-                          })}
+                        <div className="flex flex-wrap gap-2 mb-4">
+                          {product.watch_sizes.map((size) => (
+                            <SizeBadge key={size} size={size} avail={product.sizes[size]} />
+                          ))}
                         </div>
                       )}
 
-                      <p className="text-xs text-gray-400">
-                        {available}/{total} sizes in stock
-                      </p>
+                      {/* Footer */}
+                      <div className="pt-3 border-t border-grid-line flex items-center justify-between">
+                        <span className="font-mono text-[0.58rem] tracking-widest uppercase text-ink-soft">
+                          {allUnknown ? "First check coming soon" : `${available} of ${total} sizes available`}
+                        </span>
+                        {hasAny && (
+                          <span className="font-display italic text-accent text-xs font-semibold">
+                            Buy fast →
+                          </span>
+                        )}
+                      </div>
                     </div>
                   );
                 })}

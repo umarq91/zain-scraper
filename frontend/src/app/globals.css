@@ -1,3 +1,56 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  :root {
+    --accent: #F26B1F;
+    --accent-deep: #D9551A;
+    --accent-soft: #FFE6D4;
+    --ink: #0A0A0A;
+    --ink-soft: #2A2A2A;
+    --paper: #FAFAF7;
+    --paper-pure: #FFFFFF;
+    --grid-line: #E4E4E0;
+    --grid-major: #D4D4CE;
+    --grid-size: 24px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    color: var(--ink);
+    background-color: var(--paper);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Remove default browser outlines — we use custom focus styles */
+  :focus { outline: none; }
+}
+
+@layer utilities {
+  .bg-grid {
+    background-color: var(--paper);
+    background-image:
+      linear-gradient(var(--grid-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+    background-size: var(--grid-size) var(--grid-size);
+  }
+
+  /* Input/button focus: hard accent shadow instead of browser ring */
+  .focus-hard:focus {
+    box-shadow: 4px 4px 0 var(--accent);
+  }
+
+  /* Hard shadow transitions */
+  .hover-lift {
+    transition: box-shadow 0.1s ease, transform 0.1s ease;
+  }
+  .hover-lift:hover {
+    box-shadow: 6px 6px 0 var(--ink);
+  }
+  .hover-lift:active {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+}

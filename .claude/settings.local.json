@@ -25,7 +25,14 @@
       "Bash(mkdir -p /Users/sid/Developer/work/scraper-selenium/frontend/src/app/api/settings)",
       "Bash(mkdir -p /Users/sid/Developer/work/scraper-selenium/frontend/src/app/api/products/\\\\[id\\\\])",
       "Bash(mkdir -p /Users/sid/Developer/work/scraper-selenium/supabase/migrations)",
-      "Bash(node *)"
+      "Bash(node *)",
+      "Bash(git filter-branch *)",
+      "Bash(git stash *)",
+      "Bash(FILTER_BRANCH_SQUELCH_WARNING=1 git filter-branch --force --index-filter 'git rm --cached --ignore-unmatch frontend/.env backend/.env' --prune-empty HEAD)",
+      "Bash(git rm *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)"
     ]
   }
 }
