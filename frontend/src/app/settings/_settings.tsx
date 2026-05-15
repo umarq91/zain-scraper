@@ -142,6 +142,34 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-grid">
+      {/* Add-product loading modal */}
+      {addingProduct && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-6">
+          <div className="absolute inset-0 bg-ink opacity-70" />
+          <div className="relative bg-paper-pure border border-ink shadow-hard-lg w-full max-w-sm p-8 z-10">
+            <span className="absolute top-0 left-0 translate-x-[-1px] translate-y-[-1px] opacity-30"><Bracket pos="tl" /></span>
+            <span className="absolute top-0 right-0 translate-x-[1px] translate-y-[-1px] opacity-30"><Bracket pos="tr" /></span>
+
+            {/* Animated squares */}
+            <div className="flex gap-1.5 mb-6">
+              <span className="w-2.5 h-2.5 bg-accent animate-bounce [animation-delay:0ms]" />
+              <span className="w-2.5 h-2.5 bg-accent animate-bounce [animation-delay:150ms]" />
+              <span className="w-2.5 h-2.5 bg-accent animate-bounce [animation-delay:300ms]" />
+            </div>
+
+            <p className="font-display font-bold text-ink mb-1" style={{ fontSize: "1.2rem", letterSpacing: "-0.01em" }}>
+              Fetching product…
+            </p>
+            <p className="font-body text-sm text-ink-soft mb-5">
+              We&apos;re grabbing the product info and image. This takes a few seconds.
+            </p>
+            <p className="font-mono text-[0.6rem] text-ink-soft opacity-50 truncate border-t border-grid-line pt-3">
+              {newUrl}
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <header
         className="bg-paper-pure border-b border-ink sticky top-0 z-20"
@@ -176,9 +204,16 @@ export default function SettingsPage() {
 
       <main className="max-w-3xl mx-auto px-6 py-10">
         {loading ? (
-          <p className="font-mono text-[0.65rem] tracking-widest uppercase text-ink-soft animate-pulse py-16 text-center">
-            Loading…
-          </p>
+          <div className="space-y-6">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="bg-paper-pure border border-ink p-6 shadow-hard-sm space-y-4">
+                <div className="h-4 w-32 bg-grid-line animate-pulse" />
+                <div className="h-3 w-full bg-grid-line animate-pulse" />
+                <div className="h-3 w-4/5 bg-grid-line animate-pulse" />
+                <div className="h-10 w-full bg-grid-line animate-pulse mt-2" />
+              </div>
+            ))}
+          </div>
         ) : (
           <div className="space-y-6">
             {/* === SECTION: Add New Product === */}

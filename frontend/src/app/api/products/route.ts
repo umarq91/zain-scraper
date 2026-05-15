@@ -40,6 +40,22 @@ export async function GET() {
   return NextResponse.json(data ?? []);
 }
 
+async function fetchProductImage(productUrl: string): Promise<string | null> {
+  try {
+    const u = new URL(productUrl);
+    u.search = "";
+    u.pathname = u.pathname.replace(/\/+$/, "") + ".js";
+    const res = await fetch(u.toString(), { headers: { "User-Agent": "Mozilla/5.0" } });
+    if (!res.ok) return null;
+    const json = await res.json();
+    const img: string | null = json.featured_image ?? json.images?.[0] ?? null;
+    if (!img) return null;
+    return img.startsWith("//") ? "https:" + img : img;
+  } catch {
+    return null;
+  }
+}
+
 export async function POST(req: Request) {
   const cookieStore = await cookies();
   const supabase = createClient(cookieStore);
@@ -53,6 +69,7 @@ export async function POST(req: Request) {
 
   const url = cleanUrl(body.url);
   const handle = handleFromUrl(url);
+  const image_url = await fetchProductImage(url);
 
   const { data, error } = await supabase
     .from("products")
@@ -61,6 +78,7 @@ export async function POST(req: Request) {
       url,
       handle,
       watch_sizes: body.watch_sizes ?? [],
+      image_url,
     })
     .select()
     .single();

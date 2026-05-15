@@ -28,6 +28,11 @@
   :focus { outline: none; }
 }
 
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
 @layer utilities {
   .bg-grid {
     background-color: var(--paper);

@@ -23,7 +23,7 @@ function Bracket({ pos }: { pos: "tl" | "tr" | "bl" | "br" }) {
 function SizeBadge({ size, avail }: { size: string; avail: boolean | null }) {
   if (avail === null) {
     return (
-      <span className="font-mono text-[0.65rem] tracking-widest uppercase px-2.5 py-1 border border-grid-line text-ink-soft bg-paper">
+      <span className="font-mono text-sm tracking-wider uppercase px-4 py-2 border border-grid-line text-ink-soft bg-paper font-medium">
         {size}
       </span>
     );
@@ -31,7 +31,7 @@ function SizeBadge({ size, avail }: { size: string; avail: boolean | null }) {
   if (avail) {
     return (
       <span
-        className="font-mono text-[0.65rem] tracking-widest uppercase px-2.5 py-1 font-medium"
+        className="font-mono text-sm tracking-wider uppercase px-4 py-2 font-bold"
         style={{ background: "var(--accent)", color: "var(--paper)", borderRadius: "2px", transform: "rotate(-0.3deg)", display: "inline-block" }}
       >
         {size}
@@ -39,7 +39,7 @@ function SizeBadge({ size, avail }: { size: string; avail: boolean | null }) {
     );
   }
   return (
-    <span className="font-mono text-[0.65rem] tracking-widest uppercase px-2.5 py-1 border border-ink text-ink-soft bg-paper line-through opacity-40">
+    <span className="font-mono text-sm tracking-wider uppercase px-4 py-2 border border-ink text-ink-soft bg-paper line-through opacity-30">
       {size}
     </span>
   );
@@ -149,10 +149,27 @@ export default function Dashboard() {
         )}
 
         {loading && (
-          <div className="flex items-center gap-3 py-24 justify-center">
-            <span className="font-mono text-[0.65rem] tracking-widest uppercase text-ink-soft animate-pulse">
-              Loading…
-            </span>
+          <div className="grid gap-6 sm:grid-cols-2">
+            {[0, 1, 2, 3].map((i) => (
+              <div key={i} className="bg-paper-pure border border-ink overflow-hidden" style={{ boxShadow: "4px 4px 0 #0A0A0A" }}>
+                {/* Image skeleton */}
+                <div className="h-64 border-b border-grid-line relative overflow-hidden bg-grid">
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-paper to-transparent animate-[shimmer_1.5s_infinite]" style={{ backgroundSize: "200% 100%" }} />
+                </div>
+                {/* Content skeleton */}
+                <div className="p-5 space-y-3">
+                  <div className="h-2.5 w-16 bg-grid-line animate-pulse" />
+                  <div className="h-5 w-3/4 bg-grid-line animate-pulse" />
+                  <div className="h-2.5 w-2/5 bg-grid-line animate-pulse" />
+                  <div className="flex gap-2 pt-1">
+                    {[0, 1, 2].map((j) => (
+                      <div key={j} className="h-10 w-14 bg-grid-line animate-pulse" />
+                    ))}
+                  </div>
+                  <div className="pt-3 border-t border-grid-line h-2.5 w-1/3 bg-grid-line animate-pulse" />
+                </div>
+              </div>
+            ))}
           </div>
         )}
 
@@ -215,25 +232,47 @@ export default function Dashboard() {
                   const total = Object.keys(product.sizes).length;
                   const hasAny = available > 0;
                   const allUnknown = Object.values(product.sizes).every((v) => v === null);
+                  const initial = product.name.charAt(0).toUpperCase();
 
                   return (
                     <div
                       key={product.id}
-                      className="relative bg-paper-pure border border-ink p-5"
+                      className="relative bg-paper-pure border border-ink overflow-hidden flex flex-col"
                       style={{ boxShadow: hasAny ? "4px 4px 0 var(--accent)" : "4px 4px 0 #0A0A0A" }}
                     >
-                      {/* Corner bracket */}
-                      <span className="absolute top-0 left-0 translate-x-[-1px] translate-y-[-1px] opacity-30">
-                        <Bracket pos="tl" />
-                      </span>
+                      {/* Image / Fallback — always shown */}
+                      <div className="relative h-64 border-b border-grid-line flex-shrink-0">
+                        {product.image_url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={product.image_url}
+                            alt={product.name}
+                            className="w-full h-full object-contain"
+                          />
+                        ) : (
+                          /* Fallback: grid pattern + giant faded initial */
+                          <div className="w-full h-full bg-grid flex items-center justify-center relative overflow-hidden">
+                            <span
+                              className="font-display font-bold select-none pointer-events-none"
+                              style={{ fontSize: "7rem", lineHeight: 1, color: "var(--ink)", opacity: 0.06 }}
+                            >
+                              {initial}
+                            </span>
+                            {/* Diagonal rule */}
+                            <svg className="absolute inset-0 w-full h-full" aria-hidden="true">
+                              <line x1="0" y1="100%" x2="100%" y2="0" stroke="var(--grid-line)" strokeWidth="1" />
+                              <line x1="-20%" y1="100%" x2="80%" y2="0" stroke="var(--grid-line)" strokeWidth="1" />
+                              <line x1="20%" y1="100%" x2="120%" y2="0" stroke="var(--grid-line)" strokeWidth="1" />
+                            </svg>
+                          </div>
+                        )}
 
-                      {/* Status label */}
-                      <div className="flex items-center justify-between mb-4">
+                        {/* Status badge overlaid on image */}
                         <span
-                          className="font-mono text-[0.58rem] tracking-[0.14em] uppercase font-medium px-2 py-0.5"
+                          className="absolute top-3 left-3 font-mono text-[0.58rem] tracking-[0.14em] uppercase font-medium px-2 py-0.5"
                           style={
                             allUnknown
-                              ? { background: "var(--grid-line)", color: "var(--ink-soft)", borderRadius: "2px" }
+                              ? { background: "var(--paper)", color: "var(--ink-soft)", border: "1px solid var(--grid-line)" }
                               : hasAny
                               ? { background: "var(--accent)", color: "var(--paper)", borderRadius: "2px", transform: "rotate(-0.3deg)", display: "inline-block" }
                               : { background: "var(--ink)", color: "var(--paper)", borderRadius: "2px" }
@@ -241,52 +280,63 @@ export default function Dashboard() {
                         >
                           {allUnknown ? "Not Yet Checked" : hasAny ? "In Stock" : "Sold Out"}
                         </span>
+
+                        {/* View link overlaid */}
                         <a
                           href={cleanUrl(product.url)}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="font-mono text-[0.58rem] tracking-widest uppercase text-ink-soft hover:text-accent transition-colors"
+                          className="absolute top-3 right-3 font-mono text-[0.58rem] tracking-widest uppercase px-2 py-0.5 hover:bg-accent hover:text-paper transition-colors"
+                          style={{ background: "var(--paper)", border: "1px solid var(--grid-line)", color: "var(--ink-soft)" }}
                         >
                           View ↗
                         </a>
+
+                        {/* Corner bracket */}
+                        <span className="absolute top-0 left-0 translate-x-[-1px] translate-y-[-1px] opacity-30 pointer-events-none">
+                          <Bracket pos="tl" />
+                        </span>
                       </div>
 
-                      {/* Product name */}
-                      <h2
-                        className="font-display font-bold text-ink mb-1 leading-tight line-clamp-2"
-                        style={{ fontSize: "1.1rem", letterSpacing: "-0.01em" }}
-                      >
-                        {product.name}
-                      </h2>
+                      {/* Card content */}
+                      <div className="p-5 flex flex-col flex-1">
+                        {/* Product name */}
+                        <h2
+                          className="font-display font-bold text-ink mb-1 leading-tight line-clamp-2"
+                          style={{ fontSize: "1.1rem", letterSpacing: "-0.01em" }}
+                        >
+                          {product.name}
+                        </h2>
 
-                      {/* URL */}
-                      <p className="font-mono text-[0.6rem] text-ink-soft opacity-50 truncate mb-4">
-                        {product.url.replace(/^https?:\/\//, "").replace(/\/products\/.*/, "")}
-                      </p>
-
-                      {/* Size badges */}
-                      {product.watch_sizes.length === 0 ? (
-                        <p className="font-mono text-[0.6rem] uppercase tracking-widest text-ink-soft opacity-40">
-                          No sizes selected — <Link href="/settings" className="underline hover:text-accent">pick some</Link>
+                        {/* Store domain */}
+                        <p className="font-mono text-[0.6rem] text-ink-soft opacity-50 truncate mb-4">
+                          {product.url.replace(/^https?:\/\//, "").replace(/\/products\/.*/, "")}
                         </p>
-                      ) : (
-                        <div className="flex flex-wrap gap-2 mb-4">
-                          {product.watch_sizes.map((size) => (
-                            <SizeBadge key={size} size={size} avail={product.sizes[size]} />
-                          ))}
-                        </div>
-                      )}
 
-                      {/* Footer */}
-                      <div className="pt-3 border-t border-grid-line flex items-center justify-between">
-                        <span className="font-mono text-[0.58rem] tracking-widest uppercase text-ink-soft">
-                          {allUnknown ? "First check coming soon" : `${available} of ${total} sizes available`}
-                        </span>
-                        {hasAny && (
-                          <span className="font-display italic text-accent text-xs font-semibold">
-                            Buy fast →
-                          </span>
+                        {/* Size badges */}
+                        {product.watch_sizes.length === 0 ? (
+                          <p className="font-mono text-[0.6rem] uppercase tracking-widest text-ink-soft opacity-40">
+                            No sizes selected — <Link href="/settings" className="underline hover:text-accent">pick some</Link>
+                          </p>
+                        ) : (
+                          <div className="flex flex-wrap gap-2 mb-4">
+                            {product.watch_sizes.map((size) => (
+                              <SizeBadge key={size} size={size} avail={product.sizes[size]} />
+                            ))}
+                          </div>
                         )}
+
+                        {/* Footer */}
+                        <div className="mt-auto pt-3 border-t border-grid-line flex items-center justify-between">
+                          <span className="font-mono text-[0.58rem] tracking-widest uppercase text-ink-soft">
+                            {allUnknown ? "First check coming soon" : `${available} of ${total} sizes available`}
+                          </span>
+                          {hasAny && (
+                            <span className="font-display italic text-accent text-xs font-semibold">
+                              Buy fast →
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   );

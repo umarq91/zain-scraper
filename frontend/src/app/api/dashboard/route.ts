@@ -21,7 +21,7 @@ export async function GET() {
 
     const { data: products, error: prodError } = await supabase
       .from("products")
-      .select("id, url, handle, watch_sizes")
+      .select("id, url, handle, watch_sizes, image_url")
       .eq("user_id", user.id)
       .order("created_at", { ascending: true });
 
@@ -53,6 +53,7 @@ export async function GET() {
         url: p.url,
         handle: p.handle,
         name: nameFromHandle(p.handle),
+        image_url: p.image_url ?? null,
         watch_sizes: p.watch_sizes,
         sizes,
       };
