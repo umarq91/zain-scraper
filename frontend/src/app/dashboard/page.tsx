@@ -1,2 +1,2 @@
 export const dynamic = "force-dynamic";
-export { default } from "../_dashboard";
+export { default } from "@/sections/dashboard";

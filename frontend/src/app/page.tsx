@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 import { createClient } from "@/utils/supabase/server";
-import LandingPage from "./_landing";
+import LandingPage from "@/sections/landing";
 
 export const dynamic = "force-dynamic";
 
