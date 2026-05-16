@@ -1,6 +1,7 @@
 import { fileURLToPath } from "node:url";
 import nodemailer from "nodemailer";
 import { createClient } from "@supabase/supabase-js";
+import { buildRestockEmail } from "./emailTemplate.js";
 
 // Load .env for local runs; GitHub Actions / Railway inject env vars directly
 try {
@@ -141,13 +142,22 @@ async function checkProduct(product, emailTo) {
 
   if (sizesToAlert.length && emailTo) {
     try {
+      const img = data.featured_image ?? data.images?.[0] ?? null;
+      const imageUrl = img ? (img.startsWith("//") ? "https:" + img : img) : null;
+
+      const { subject, html, text } = buildRestockEmail({
+        productName: data.title,
+        availableSizes: sizesToAlert,
+        productUrl: url,
+        imageUrl,
+      });
+
       await sendWithRetry({
-        from: process.env.GMAIL_USER,
+        from: `StockWatch <${process.env.GMAIL_USER}>`,
         to: emailTo,
-        subject: `IN STOCK: size ${sizesToAlert.join(", ")} — ${data.title}`,
-        text:
-          `Size ${sizesToAlert.join(", ")} now available.\n\n` +
-          `${data.title}\n${url}\n\nBuy fast before it sells out.`,
+        subject,
+        html,
+        text,
       });
     } catch (err) {
       console.error(`[${ts}] [${handle}] ALERT EMAIL FAILED: ${err.message}`);

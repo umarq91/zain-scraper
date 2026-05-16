@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 import { createClient } from "@supabase/supabase-js";
+import { buildRestockEmail } from "@/lib/emailTemplate";
 
 function jsEndpoint(productUrl: string) {
   const u = new URL(productUrl);
@@ -50,11 +51,22 @@ async function checkProduct(
   }
 
   if (nowAvailable.length && emailTo) {
+    const img: string | null = data.featured_image ?? data.images?.[0] ?? null;
+    const imageUrl = img ? (img.startsWith("//") ? "https:" + img : img) : null;
+
+    const { subject, html, text } = buildRestockEmail({
+      productName: data.title,
+      availableSizes: nowAvailable,
+      productUrl: product.url,
+      imageUrl,
+    });
+
     await transporter.sendMail({
-      from: process.env.GMAIL_USER,
+      from: `StockWatch <${process.env.GMAIL_USER}>`,
       to: emailTo,
-      subject: `IN STOCK: size ${nowAvailable.join(", ")} — ${data.title}`,
-      text: `Size ${nowAvailable.join(", ")} now available.\n\n${data.title}\n${product.url}\n\nBuy fast!`,
+      subject,
+      html,
+      text,
     });
   }
 }
