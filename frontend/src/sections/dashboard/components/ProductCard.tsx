@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Bracket } from "@/components/shared/Bracket";
 import { SizeBadge } from "./SizeBadge";
-import { cleanUrl } from "@/lib/utils";
+import { cleanUrl, formatRelativeTime } from "@/lib/utils";
 import { ROUTES } from "@/constants/routes";
 import type { ProductWithState } from "@/types";
 
@@ -14,6 +14,10 @@ export function ProductCard({ product }: { product: ProductWithState }) {
   const allUnknown = Object.values(product.sizes).every((v) => v === null);
   const isPaused = product.is_paused ?? false;
   const initial = product.name.charAt(0).toUpperCase();
+  const lastChecked = product.last_checked_at;
+  const isRecent = lastChecked
+    ? Date.now() - new Date(lastChecked).getTime() < 6 * 60_000
+    : false;
 
   return (
     <div
@@ -88,11 +92,22 @@ export function ProductCard({ product }: { product: ProductWithState }) {
           </div>
         )}
 
-        <div className="mt-auto pt-3 border-t border-grid-line flex items-center justify-between">
-          <span className="font-mono text-[0.58rem] tracking-widest uppercase text-ink-soft">
-            {allUnknown ? "First check coming soon" : `${available} of ${total} sizes available`}
-          </span>
-          {hasAny && <span className="font-display italic text-accent text-xs font-semibold">Buy fast →</span>}
+        <div className="mt-auto pt-3 border-t border-grid-line space-y-1.5">
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-[0.58rem] tracking-widest uppercase text-ink-soft">
+              {allUnknown ? "Not yet checked" : `${available} of ${total} in stock`}
+            </span>
+            {hasAny && <span className="font-display italic text-accent text-xs font-semibold">Buy fast →</span>}
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span
+              className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+              style={{ background: isRecent ? "var(--accent)" : "var(--grid-line)" }}
+            />
+            <span className="font-mono text-[0.52rem] uppercase tracking-widest text-ink-soft opacity-60">
+              {lastChecked ? `Checked ${formatRelativeTime(lastChecked)}` : "Waiting for first check"}
+            </span>
+          </div>
         </div>
       </div>
     </div>

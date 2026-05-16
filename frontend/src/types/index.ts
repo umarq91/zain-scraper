@@ -18,6 +18,7 @@ export type ProductWithState = Product & {
   name: string;
   image_url: string | null;
   sizes: Record<string, boolean | null>;
+  last_checked_at: string | null;
 };
 
 export type DashboardData = {

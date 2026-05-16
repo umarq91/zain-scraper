@@ -5,9 +5,9 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/utils/supabase/client";
 import { useDashboard } from "@/hooks/useDashboard";
 import { AppHeader } from "@/components/layout/AppHeader";
-import { Bracket } from "@/components/shared/Bracket";
 import { ProductCard } from "./components/ProductCard";
 import { LoadingSkeleton } from "./components/LoadingSkeleton";
+import { OnboardingEmptyState } from "./components/OnboardingEmptyState";
 import { ROUTES } from "@/constants/routes";
 
 export default function Dashboard() {
@@ -76,22 +76,7 @@ export default function Dashboard() {
             </div>
 
             {data.products.length === 0 ? (
-              <div className="bg-paper-pure border border-ink p-12 shadow-hard-lg relative flex flex-col items-center justify-center text-center">
-                <span className="absolute top-3 left-3 opacity-30"><Bracket pos="tl" /></span>
-                <span className="absolute top-3 right-3 opacity-30"><Bracket pos="tr" /></span>
-                <span className="absolute bottom-3 left-3 opacity-30"><Bracket pos="bl" /></span>
-                <span className="absolute bottom-3 right-3 opacity-30"><Bracket pos="br" /></span>
-                <p className="font-display italic text-ink-soft mb-2" style={{ fontSize: "1.1rem", fontWeight: 500 }}>you&apos;re not watching anything yet</p>
-                <h2 className="font-display font-bold text-ink mb-3" style={{ fontSize: "clamp(2rem, 5vw, 3rem)", letterSpacing: "-0.02em", lineHeight: 1 }}>
-                  Add your first product
-                </h2>
-                <p className="font-body text-sm text-ink-soft mb-8 max-w-xs">
-                  Paste a product link, pick your sizes, and we&apos;ll email you the second it comes back in stock.
-                </p>
-                <Link href={ROUTES.SETTINGS} className="inline-block px-6 py-3 bg-ink text-paper font-mono text-[0.65rem] tracking-[0.1em] uppercase shadow-hard-sm hover-lift">
-                  Start Watching →
-                </Link>
-              </div>
+              <OnboardingEmptyState />
             ) : (
               <div className="grid gap-6 sm:grid-cols-2">
                 {data.products.map((product) => (

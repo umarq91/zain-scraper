@@ -40,16 +40,24 @@ export async function GET() {
 
     const productIds = (products ?? []).map((p) => p.id);
     let stateMap: Record<string, Record<string, boolean>> = {};
+    let lastCheckedMap: Record<string, string> = {};
 
     if (productIds.length > 0) {
       const { data: states } = await supabase
         .from("product_state")
-        .select("product_id, size, available")
+        .select("product_id, size, available, last_checked")
         .in("product_id", productIds);
 
       for (const s of states ?? []) {
         if (!stateMap[s.product_id]) stateMap[s.product_id] = {};
         stateMap[s.product_id][s.size] = s.available;
+
+        if (s.last_checked) {
+          const current = lastCheckedMap[s.product_id];
+          if (!current || s.last_checked > current) {
+            lastCheckedMap[s.product_id] = s.last_checked;
+          }
+        }
       }
     }
 
@@ -69,11 +77,29 @@ export async function GET() {
         is_paused: p.is_paused ?? false,
         notify_mode: (p.notify_mode ?? "once") as "once" | "always",
         sizes,
+        last_checked_at: lastCheckedMap[p.id] ?? null,
       };
     });
 
+    const sorted = [...productsWithState].sort((a, b) => {
+      // Paused → always last
+      if (a.is_paused !== b.is_paused) return a.is_paused ? 1 : -1;
+
+      const aAvail = Object.values(a.sizes).some(Boolean);
+      const bAvail = Object.values(b.sizes).some(Boolean);
+      const aUnknown = Object.values(a.sizes).every((v) => v === null);
+      const bUnknown = Object.values(b.sizes).every((v) => v === null);
+
+      // In-stock → first
+      if (aAvail !== bAvail) return aAvail ? -1 : 1;
+      // Not-yet-checked → before sold-out (shows "coming soon" above "sold out")
+      if (aUnknown !== bUnknown) return aUnknown ? -1 : 1;
+
+      return 0;
+    });
+
     const data: DashboardData = {
-      products: productsWithState,
+      products: sorted,
       interval_minutes,
     };
 
