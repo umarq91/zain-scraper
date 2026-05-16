@@ -33,7 +33,13 @@
       "Bash(git add *)",
       "Bash(git commit *)",
       "Bash(git push *)",
-      "Bash(grep -n \"Every \\\\`\\\\|Every \\\\${\" /Users/sid/Developer/work/scraper-selenium/frontend/src/app/settings/_settings.tsx)"
+      "Bash(grep -n \"Every \\\\`\\\\|Every \\\\${\" /Users/sid/Developer/work/scraper-selenium/frontend/src/app/settings/_settings.tsx)",
+      "Bash(xargs ls -1)",
+      "Bash(echo \"PID: $!\")",
+      "Bash(curl *)",
+      "Read(//tmp/**)",
+      "Bash(pkill -f \"next dev\")",
+      "Bash(npm list *)"
     ]
   }
 }
