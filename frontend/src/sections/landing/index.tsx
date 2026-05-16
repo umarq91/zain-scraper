@@ -4,7 +4,10 @@ import Link from "next/link";
 import { motion, MotionConfig } from "framer-motion";
 import { Bracket } from "@/components/shared/Bracket";
 import { DashboardMockup } from "./components/DashboardMockup";
+import { FeaturesSection } from "./components/FeaturesSection";
 import { HowItWorks } from "./components/HowItWorks";
+import { FAQSection } from "./components/FAQSection";
+import { Footer } from "./components/Footer";
 import { ROUTES } from "@/constants/routes";
 
 const ease = [0.16, 1, 0.3, 1] as const;
@@ -137,7 +140,10 @@ export default function LandingPage() {
           </div>
         </section>
 
+        <FeaturesSection />
         <HowItWorks />
+        <FAQSection />
+        <Footer />
 
       </div>
     </MotionConfig>
