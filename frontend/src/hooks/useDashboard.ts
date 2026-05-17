@@ -39,13 +39,17 @@ export function useDashboard() {
     setTriggerMsg("");
     try {
       const res = await fetch("/api/trigger", { method: "POST" });
-      setTriggerMsg(
-        res.ok
-          ? `Scan started — results in ~${data?.interval_minutes ?? 5} min.`
-          : "Could not start scan."
-      );
+      if (res.ok) {
+        setTriggerMsg("Checking your products now…");
+        setTimeout(() => fetchData(), 8_000);
+        setTimeout(() => setTriggerMsg(""), 10_000);
+      } else {
+        setTriggerMsg("Scan couldn't start. Try again in a moment.");
+        setTimeout(() => setTriggerMsg(""), 4_000);
+      }
     } catch {
-      setTriggerMsg("Could not start scan.");
+      setTriggerMsg("No connection — check your internet and try again.");
+      setTimeout(() => setTriggerMsg(""), 4_000);
     } finally {
       setTriggering(false);
     }

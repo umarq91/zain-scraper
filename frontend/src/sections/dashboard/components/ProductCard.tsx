@@ -27,7 +27,7 @@ export function ProductCard({ product }: { product: ProductWithState }) {
         opacity: isPaused ? 0.65 : 1,
       }}
     >
-      <div className="relative h-64 border-b border-grid-line flex-shrink-0">
+      <div className="relative h-56 border-b border-grid-line flex-shrink-0">
         {product.image_url ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={product.image_url} alt={product.name} className="w-full h-full object-contain" />
@@ -47,24 +47,29 @@ export function ProductCard({ product }: { product: ProductWithState }) {
         <span
           className="absolute top-3 left-3 font-mono text-[0.58rem] tracking-[0.14em] uppercase font-medium px-2 py-0.5"
           style={
-            isPaused ? { background: "var(--paper)", color: "var(--ink-soft)", border: "1px solid var(--ink-soft)" }
-            : allUnknown ? { background: "var(--paper)", color: "var(--ink-soft)", border: "1px solid var(--grid-line)" }
-            : hasAny ? { background: "var(--accent)", color: "var(--paper)", borderRadius: "2px", transform: "rotate(-0.3deg)", display: "inline-block" }
-            : { background: "var(--ink)", color: "var(--paper)", borderRadius: "2px" }
+            isPaused
+              ? { background: "var(--paper)", color: "var(--ink-soft)", border: "1px solid var(--ink-soft)" }
+              : allUnknown
+              ? { background: "var(--paper)", color: "var(--ink-soft)", border: "1px solid var(--grid-line)" }
+              : hasAny
+              ? { background: "var(--accent)", color: "var(--paper)", borderRadius: "2px", transform: "rotate(-0.3deg)", display: "inline-block" }
+              : { background: "var(--ink)", color: "var(--paper)", borderRadius: "2px" }
           }
         >
           {isPaused ? "Paused" : allUnknown ? "Not Yet Checked" : hasAny ? "In Stock" : "Sold Out"}
         </span>
 
-        <a
-          href={cleanUrl(product.url)}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="absolute top-3 right-3 font-mono text-[0.58rem] tracking-widest uppercase px-2 py-0.5 hover:bg-accent hover:text-paper transition-colors"
-          style={{ background: "var(--paper)", border: "1px solid var(--grid-line)", color: "var(--ink-soft)" }}
-        >
-          View ↗
-        </a>
+        {!hasAny && (
+          <a
+            href={cleanUrl(product.url)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="absolute top-3 right-3 font-mono text-[0.58rem] tracking-widest uppercase px-2 py-0.5 hover:bg-accent hover:text-paper transition-colors"
+            style={{ background: "var(--paper)", border: "1px solid var(--grid-line)", color: "var(--ink-soft)" }}
+          >
+            View ↗
+          </a>
+        )}
 
         <span className="absolute top-0 left-0 translate-x-[-1px] translate-y-[-1px] opacity-30 pointer-events-none">
           <Bracket pos="tl" />
@@ -82,7 +87,7 @@ export function ProductCard({ product }: { product: ProductWithState }) {
         {product.watch_sizes.length === 0 ? (
           <p className="font-mono text-[0.6rem] uppercase tracking-widest text-ink-soft opacity-40">
             No sizes selected —{" "}
-            <Link href={ROUTES.SETTINGS} className="underline hover:text-accent">pick some</Link>
+            <Link href={ROUTES.SETTINGS} className="underline hover:text-accent">add sizes</Link>
           </p>
         ) : (
           <div className="flex flex-wrap gap-2 mb-4">
@@ -92,22 +97,34 @@ export function ProductCard({ product }: { product: ProductWithState }) {
           </div>
         )}
 
-        <div className="mt-auto pt-3 border-t border-grid-line space-y-1.5">
-          <div className="flex items-center justify-between">
-            <span className="font-mono text-[0.58rem] tracking-widest uppercase text-ink-soft">
-              {allUnknown ? "Not yet checked" : `${available} of ${total} in stock`}
-            </span>
-            {hasAny && <span className="font-display italic text-accent text-xs font-semibold">Buy fast →</span>}
-          </div>
+        <div className="mt-auto pt-3 border-t border-grid-line space-y-2">
           <div className="flex items-center gap-1.5">
             <span
               className="w-1.5 h-1.5 rounded-full flex-shrink-0"
               style={{ background: isRecent ? "var(--accent)" : "var(--grid-line)" }}
             />
             <span className="font-mono text-[0.52rem] uppercase tracking-widest text-ink-soft opacity-60">
-              {lastChecked ? `Checked ${formatRelativeTime(lastChecked)}` : "Waiting for first check"}
+              {lastChecked ? `Checked ${formatRelativeTime(lastChecked)}` : "Waiting for first scan"}
             </span>
           </div>
+
+          {!allUnknown && !isPaused && (
+            <p className="font-mono text-[0.58rem] tracking-widest uppercase text-ink-soft">
+              {hasAny ? `${available} of ${total} size${total !== 1 ? "s" : ""} available` : `All ${total} sizes sold out`}
+            </p>
+          )}
+
+          {hasAny && !isPaused && (
+            <a
+              href={cleanUrl(product.url)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-1 flex items-center justify-center w-full py-3 font-mono text-[0.65rem] tracking-[0.1em] uppercase font-medium shadow-hard-sm hover-lift transition-all"
+              style={{ background: "var(--accent)", color: "var(--paper)" }}
+            >
+              Shop Now — Grab it before it goes →
+            </a>
+          )}
         </div>
       </div>
     </div>

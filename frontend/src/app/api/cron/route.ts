@@ -14,9 +14,11 @@ async function checkProduct(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   supabase: any,
   transporter: nodemailer.Transporter,
-  product: { id: string; url: string; handle: string; watch_sizes: string[] },
+  product: { id: string; url: string; handle: string; watch_sizes: string[]; notify_mode: "once" | "always"; is_paused: boolean },
   emailTo: string | null
 ) {
+  if (product.is_paused) return;
+
   const want = product.watch_sizes.map((s) => s.toUpperCase());
   if (!want.length) return;
 
@@ -40,6 +42,18 @@ async function checkProduct(
     }
   }
 
+  // Read previous state before upserting so we can detect transitions
+  const { data: prevRows } = await supabase
+    .from("product_state")
+    .select("size, available")
+    .eq("product_id", product.id)
+    .in("size", want);
+
+  const prevAvail: Record<string, boolean> = {};
+  for (const row of (prevRows ?? [])) {
+    prevAvail[row.size] = row.available;
+  }
+
   const nowAvailable = want.filter((s) => availBySize[s]);
   const stateRows = want.filter((s) => s in availBySize).map((s) => ({
     product_id: product.id, size: s, available: availBySize[s], last_checked: new Date().toISOString(),
@@ -50,13 +64,19 @@ async function checkProduct(
     await (supabase.from("product_state") as any).upsert(stateRows, { onConflict: "product_id,size" });
   }
 
-  if (nowAvailable.length && emailTo) {
+  // "once": only notify on sizes that just flipped unavailable → available
+  // "always": notify every check while available
+  const sizesToNotify = product.notify_mode === "once"
+    ? nowAvailable.filter((s) => !prevAvail[s])
+    : nowAvailable;
+
+  if (sizesToNotify.length && emailTo) {
     const img: string | null = data.featured_image ?? data.images?.[0] ?? null;
     const imageUrl = img ? (img.startsWith("//") ? "https:" + img : img) : null;
 
     const { subject, html, text } = buildRestockEmail({
       productName: data.title,
-      availableSizes: nowAvailable,
+      availableSizes: sizesToNotify,
       productUrl: product.url,
       imageUrl,
     });
@@ -85,7 +105,7 @@ export async function GET(req: Request) {
   const { data: allSettings } = await supabase.from("user_settings").select("user_id, email_to");
   const emailByUser = Object.fromEntries((allSettings ?? []).map((s: any) => [s.user_id, s.email_to]));
 
-  const { data: products } = await supabase.from("products").select("id, url, handle, watch_sizes, user_id");
+  const { data: products } = await supabase.from("products").select("id, url, handle, watch_sizes, user_id, notify_mode, is_paused");
   if (!products?.length) return NextResponse.json({ ok: true, checked: 0 });
 
   for (const product of products) {

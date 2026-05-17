@@ -18,6 +18,9 @@ export async function PATCH(
   const patch: Record<string, unknown> = {};
   if ("watch_sizes" in body) patch.watch_sizes = body.watch_sizes;
   if ("is_paused" in body) patch.is_paused = body.is_paused;
+  if ("notify_mode" in body && (body.notify_mode === "once" || body.notify_mode === "always")) {
+    patch.notify_mode = body.notify_mode;
+  }
 
   const { error } = await supabase
     .from("products")

@@ -23,7 +23,7 @@ type BulkResult = { added: number; failed: string[] };
 export default function SettingsPage() {
   const router = useRouter();
   const supabase = createClient();
-  const { products, loading, addProduct, removeProduct, updateProduct } = useProducts();
+  const { products, loading, addProduct, removeProduct, updateProduct, removingIds, savingIds, savedIds, productErrors } = useProducts();
   const { settings, setSettings, saving, msg, saveSettings } = useSettings();
 
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -380,6 +380,10 @@ export default function SettingsPage() {
                       key={product.id}
                       product={product}
                       intervalMinutes={settings.interval_minutes}
+                      isRemoving={removingIds.has(product.id)}
+                      isSaving={savingIds.has(product.id)}
+                      isSaved={savedIds.has(product.id)}
+                      error={productErrors.get(product.id) ?? null}
                       onRemove={() => removeProduct(product.id)}
                       onTogglePause={() => updateProduct(product.id, { is_paused: !product.is_paused })}
                       onToggleSize={(size) => {
