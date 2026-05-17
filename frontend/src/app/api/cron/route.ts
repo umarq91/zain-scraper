@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 import { createClient } from "@supabase/supabase-js";
-import { buildRestockEmail } from "@/lib/emailTemplate";
+import { buildRestockEmail, buildPriceDropEmail } from "@/lib/emailTemplate";
 
 function jsEndpoint(productUrl: string) {
   const u = new URL(productUrl);
@@ -14,7 +14,7 @@ async function checkProduct(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   supabase: any,
   transporter: nodemailer.Transporter,
-  product: { id: string; url: string; handle: string; watch_sizes: string[]; notify_mode: "once" | "always"; is_paused: boolean },
+  product: { id: string; url: string; handle: string; watch_sizes: string[]; notify_mode: "once" | "always"; is_paused: boolean; watch_price: boolean; last_known_price: number | null },
   emailTo: string | null
 ) {
   if (product.is_paused) return;
@@ -40,6 +40,40 @@ async function checkProduct(
     for (const s of want) {
       if (tokens.includes(s)) availBySize[s] = (availBySize[s] || false) || v.available;
     }
+  }
+
+  // Track price — always update, only email if watch_price is on
+  const currentPrice: number | null = typeof data.price === "number" ? data.price : null;
+  const comparePrice: number | null = typeof data.compare_at_price === "number" && data.compare_at_price > 0 ? data.compare_at_price : null;
+
+  const priceDropped =
+    product.watch_price &&
+    currentPrice !== null &&
+    product.last_known_price !== null &&
+    currentPrice < product.last_known_price;
+
+  await (supabase.from("products") as any).update({
+    last_known_price: currentPrice,
+    last_known_compare_price: comparePrice,
+  }).eq("id", product.id);
+
+  if (priceDropped && emailTo) {
+    const img: string | null = data.featured_image ?? data.images?.[0] ?? null;
+    const imageUrl = img ? (img.startsWith("//") ? "https:" + img : img) : null;
+    const { subject, html, text } = buildPriceDropEmail({
+      productName: data.title,
+      productUrl: product.url,
+      imageUrl,
+      oldPrice: product.last_known_price as number,
+      newPrice: currentPrice,
+    });
+    await transporter.sendMail({
+      from: `StockWatch <${process.env.GMAIL_USER}>`,
+      to: emailTo,
+      subject,
+      html,
+      text,
+    });
   }
 
   // Read previous state before upserting so we can detect transitions
@@ -105,7 +139,7 @@ export async function GET(req: Request) {
   const { data: allSettings } = await supabase.from("user_settings").select("user_id, email_to");
   const emailByUser = Object.fromEntries((allSettings ?? []).map((s: any) => [s.user_id, s.email_to]));
 
-  const { data: products } = await supabase.from("products").select("id, url, handle, watch_sizes, user_id, notify_mode, is_paused");
+  const { data: products } = await supabase.from("products").select("id, url, handle, watch_sizes, user_id, notify_mode, is_paused, watch_price, last_known_price");
   if (!products?.length) return NextResponse.json({ ok: true, checked: 0 });
 
   for (const product of products) {

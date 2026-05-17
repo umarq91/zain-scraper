@@ -31,12 +31,14 @@ export default function SettingsPage() {
   const [newUrl, setNewUrl] = useState("");
   const [newUrlSizes, setNewUrlSizes] = useState<string[]>(["M", "L"]);
   const [newUrlNotifyMode, setNewUrlNotifyMode] = useState<NotifyMode>("once");
+  const [newUrlWatchPrice, setNewUrlWatchPrice] = useState(false);
   const [addingProduct, setAddingProduct] = useState(false);
   const [addError, setAddError] = useState("");
   const [bulkInput, setBulkInput] = useState("");
   const [bulkUrls, setBulkUrls] = useState<string[]>([]);
   const [bulkSizes, setBulkSizes] = useState<string[]>(["M", "L"]);
   const [bulkNotifyMode, setBulkNotifyMode] = useState<NotifyMode>("once");
+  const [bulkWatchPrice, setBulkWatchPrice] = useState(false);
   const [bulkProgress, setBulkProgress] = useState<BulkProgress | null>(null);
   const [bulkResult, setBulkResult] = useState<BulkResult | null>(null);
 
@@ -51,10 +53,11 @@ export default function SettingsPage() {
     setAddingProduct(true);
     setAddError("");
     try {
-      await addProduct({ url, watch_sizes: newUrlSizes, notify_mode: newUrlNotifyMode });
+      await addProduct({ url, watch_sizes: newUrlSizes, notify_mode: newUrlNotifyMode, watch_price: newUrlWatchPrice });
       setNewUrl("");
       setNewUrlSizes(["M", "L"]);
       setNewUrlNotifyMode("once");
+      setNewUrlWatchPrice(false);
     } catch (e) {
       setAddError(e instanceof Error ? e.message : "Could not add product.");
     } finally {
@@ -79,7 +82,7 @@ export default function SettingsPage() {
     for (let i = 0; i < bulkUrls.length; i++) {
       setBulkProgress({ done: i, total: bulkUrls.length, current: bulkUrls[i] });
       try {
-        await ProductModel.create({ url: bulkUrls[i], watch_sizes: bulkSizes, notify_mode: bulkNotifyMode });
+        await ProductModel.create({ url: bulkUrls[i], watch_sizes: bulkSizes, notify_mode: bulkNotifyMode, watch_price: bulkWatchPrice });
         added++;
       } catch {
         failed.push(bulkUrls[i]);
@@ -264,6 +267,24 @@ export default function SettingsPage() {
 
                   <div className="mb-5">{notifyToggle(newUrlNotifyMode, setNewUrlNotifyMode)}</div>
 
+                  <div className="mb-5 flex items-center gap-3">
+                    <p className="font-mono text-[0.6rem] tracking-[0.1em] uppercase text-ink-soft flex-shrink-0">Price</p>
+                    <button
+                      type="button"
+                      disabled={addingProduct}
+                      onClick={() => setNewUrlWatchPrice((v) => !v)}
+                      className={`flex items-center gap-2 border px-3 py-1.5 transition-colors disabled:opacity-40 ${newUrlWatchPrice ? "border-ink bg-ink text-paper" : "border-grid-line text-ink-soft hover:border-ink hover:text-ink bg-paper-pure"}`}
+                    >
+                      <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${newUrlWatchPrice ? "bg-accent" : "bg-grid-line"}`} />
+                      <span className="font-mono text-[0.6rem] tracking-[0.08em] uppercase">
+                        {newUrlWatchPrice ? "Tracking price drops" : "Track price drops"}
+                      </span>
+                    </button>
+                    <p className="font-mono text-[0.52rem] text-ink-soft opacity-40">
+                      {newUrlWatchPrice ? "Email me when price falls" : "Off"}
+                    </p>
+                  </div>
+
                   {addError && <div className="mb-4 px-3 py-2.5 border border-red-700 text-red-700 text-xs font-body bg-red-50">{addError}</div>}
 
                   <button onClick={handleAddSingle} disabled={addingProduct || !newUrl.trim()} className="px-6 py-3 bg-accent text-paper font-mono text-[0.65rem] tracking-[0.1em] uppercase disabled:opacity-40 shadow-hard-sm hover-lift">
@@ -319,6 +340,24 @@ export default function SettingsPage() {
                   </div>
 
                   <div className="mb-5">{notifyToggle(bulkNotifyMode, setBulkNotifyMode, !!bulkProgress)}</div>
+
+                  <div className="mb-5 flex items-center gap-3">
+                    <p className="font-mono text-[0.6rem] tracking-[0.1em] uppercase text-ink-soft flex-shrink-0">Price</p>
+                    <button
+                      type="button"
+                      disabled={!!bulkProgress}
+                      onClick={() => setBulkWatchPrice((v) => !v)}
+                      className={`flex items-center gap-2 border px-3 py-1.5 transition-colors disabled:opacity-40 ${bulkWatchPrice ? "border-ink bg-ink text-paper" : "border-grid-line text-ink-soft hover:border-ink hover:text-ink bg-paper-pure"}`}
+                    >
+                      <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${bulkWatchPrice ? "bg-accent" : "bg-grid-line"}`} />
+                      <span className="font-mono text-[0.6rem] tracking-[0.08em] uppercase">
+                        {bulkWatchPrice ? "Tracking price drops" : "Track price drops"}
+                      </span>
+                    </button>
+                    <p className="font-mono text-[0.52rem] text-ink-soft opacity-40">
+                      {bulkWatchPrice ? "Email me when price falls" : "Off"}
+                    </p>
+                  </div>
 
                   {bulkProgress && (
                     <div className="mb-4 border border-grid-line bg-paper px-3 py-2.5">
@@ -393,6 +432,7 @@ export default function SettingsPage() {
                         updateProduct(product.id, { watch_sizes: next });
                       }}
                       onToggleNotify={(mode) => updateProduct(product.id, { notify_mode: mode })}
+                      onTogglePriceWatch={(val) => updateProduct(product.id, { watch_price: val })}
                     />
                   ))}
                 </div>

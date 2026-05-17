@@ -4,9 +4,10 @@ type CreatePayload = {
   url: string;
   watch_sizes: string[];
   notify_mode: "once" | "always";
+  watch_price?: boolean;
 };
 
-type UpdatePatch = Partial<Pick<Product, "watch_sizes" | "is_paused" | "notify_mode">>;
+type UpdatePatch = Partial<Pick<Product, "watch_sizes" | "is_paused" | "notify_mode" | "watch_price">>;
 
 export class ProductModel {
   static async list(): Promise<Product[]> {

@@ -7,6 +7,10 @@ import { cleanUrl, formatRelativeTime } from "@/lib/utils";
 import { ROUTES } from "@/constants/routes";
 import type { ProductWithState } from "@/types";
 
+function formatPrice(cents: number): string {
+  return `$${(cents / 100).toFixed(2)}`;
+}
+
 export function ProductCard({ product }: { product: ProductWithState }) {
   const available = Object.values(product.sizes).filter(Boolean).length;
   const total = Object.keys(product.sizes).length;
@@ -14,6 +18,10 @@ export function ProductCard({ product }: { product: ProductWithState }) {
   const allUnknown = Object.values(product.sizes).every((v) => v === null);
   const isPaused = product.is_paused ?? false;
   const initial = product.name.charAt(0).toUpperCase();
+  const price = product.last_known_price;
+  const comparePrice = product.last_known_compare_price;
+  const isOnSale = price !== null && comparePrice !== null && comparePrice > price;
+  const savingsPct = isOnSale ? Math.round((1 - price! / comparePrice!) * 100) : 0;
   const lastChecked = product.last_checked_at;
   const isRecent = lastChecked
     ? Date.now() - new Date(lastChecked).getTime() < 6 * 60_000
@@ -59,17 +67,27 @@ export function ProductCard({ product }: { product: ProductWithState }) {
           {isPaused ? "Paused" : allUnknown ? "Not Yet Checked" : hasAny ? "In Stock" : "Sold Out"}
         </span>
 
-        {!hasAny && (
-          <a
-            href={cleanUrl(product.url)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="absolute top-3 right-3 font-mono text-[0.58rem] tracking-widest uppercase px-2 py-0.5 hover:bg-accent hover:text-paper transition-colors"
-            style={{ background: "var(--paper)", border: "1px solid var(--grid-line)", color: "var(--ink-soft)" }}
-          >
-            View ↗
-          </a>
-        )}
+        <div className="absolute top-3 right-3 flex flex-col items-end gap-1.5">
+          {isOnSale && (
+            <span
+              className="font-mono text-[0.55rem] tracking-[0.1em] uppercase font-bold px-2 py-0.5"
+              style={{ background: "var(--accent)", color: "var(--paper)", borderRadius: "2px" }}
+            >
+              {savingsPct}% off
+            </span>
+          )}
+          {!hasAny && (
+            <a
+              href={cleanUrl(product.url)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-mono text-[0.58rem] tracking-widest uppercase px-2 py-0.5 hover:bg-accent hover:text-paper transition-colors"
+              style={{ background: "var(--paper)", border: "1px solid var(--grid-line)", color: "var(--ink-soft)" }}
+            >
+              View ↗
+            </a>
+          )}
+        </div>
 
         <span className="absolute top-0 left-0 translate-x-[-1px] translate-y-[-1px] opacity-30 pointer-events-none">
           <Bracket pos="tl" />
@@ -98,6 +116,24 @@ export function ProductCard({ product }: { product: ProductWithState }) {
         )}
 
         <div className="mt-auto pt-3 border-t border-grid-line space-y-2">
+          {price !== null && (
+            <div className="flex items-center gap-2">
+              <span className="font-display font-bold text-ink" style={{ fontSize: "1.1rem", letterSpacing: "-0.02em" }}>
+                {formatPrice(price)}
+              </span>
+              {isOnSale && comparePrice !== null && (
+                <>
+                  <span className="font-mono text-sm text-ink-soft line-through opacity-40">
+                    {formatPrice(comparePrice)}
+                  </span>
+                  <span className="font-mono text-[0.55rem] tracking-[0.08em] uppercase font-bold" style={{ color: "var(--accent)" }}>
+                    save {formatPrice(comparePrice - price)}
+                  </span>
+                </>
+              )}
+            </div>
+          )}
+
           <div className="flex items-center gap-1.5">
             <span
               className="w-1.5 h-1.5 rounded-full flex-shrink-0"

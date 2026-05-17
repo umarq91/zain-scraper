@@ -25,7 +25,7 @@ export async function GET() {
     ] = await Promise.all([
       supabase
         .from("products")
-        .select("id, url, handle, watch_sizes, image_url, is_paused, notify_mode")
+        .select("id, url, handle, watch_sizes, image_url, is_paused, notify_mode, watch_price, last_known_price, last_known_compare_price")
         .eq("user_id", user.id)
         .order("created_at", { ascending: true }),
       supabase
@@ -76,6 +76,9 @@ export async function GET() {
         watch_sizes: p.watch_sizes,
         is_paused: p.is_paused ?? false,
         notify_mode: (p.notify_mode ?? "once") as "once" | "always",
+        watch_price: p.watch_price ?? false,
+        last_known_price: p.last_known_price ?? null,
+        last_known_compare_price: p.last_known_compare_price ?? null,
         sizes,
         last_checked_at: lastCheckedMap[p.id] ?? null,
       };

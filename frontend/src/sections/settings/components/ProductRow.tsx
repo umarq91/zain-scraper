@@ -16,6 +16,7 @@ export function ProductRow({
   onTogglePause,
   onToggleSize,
   onToggleNotify,
+  onTogglePriceWatch,
 }: {
   product: Product;
   intervalMinutes: number;
@@ -27,6 +28,7 @@ export function ProductRow({
   onTogglePause: () => void;
   onToggleSize: (size: string) => void;
   onToggleNotify: (mode: "once" | "always") => void;
+  onTogglePriceWatch: (val: boolean) => void;
 }) {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const name = formatHandle(product.handle);
@@ -141,6 +143,23 @@ export function ProductRow({
             </div>
             <p className="font-mono text-[0.5rem] text-ink-soft opacity-30 leading-tight">
               {(product.notify_mode ?? "once") === "once" ? "Alert once per restock" : `Alert every ${intervalMinutes} min while in stock`}
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <p className="font-mono text-[0.52rem] tracking-[0.1em] uppercase text-ink-soft opacity-40 flex-shrink-0">Price</p>
+            <button
+              onClick={() => onTogglePriceWatch(!product.watch_price)}
+              disabled={busy}
+              className={`flex items-center gap-2 border px-3 py-1 transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${product.watch_price ? "border-ink bg-ink text-paper" : "border-grid-line text-ink-soft hover:border-ink hover:text-ink bg-paper-pure"}`}
+            >
+              <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${product.watch_price ? "bg-accent" : "bg-grid-line"}`} />
+              <span className="font-mono text-[0.55rem] tracking-[0.08em] uppercase">
+                {product.watch_price ? "Tracking price drops" : "Track price drops"}
+              </span>
+            </button>
+            <p className="font-mono text-[0.5rem] text-ink-soft opacity-30 leading-tight">
+              {product.watch_price ? "Email when price falls" : "Off — no price alerts"}
             </p>
           </div>
         </div>

@@ -21,6 +21,9 @@ export async function PATCH(
   if ("notify_mode" in body && (body.notify_mode === "once" || body.notify_mode === "always")) {
     patch.notify_mode = body.notify_mode;
   }
+  if ("watch_price" in body && typeof body.watch_price === "boolean") {
+    patch.watch_price = body.watch_price;
+  }
 
   const { error } = await supabase
     .from("products")

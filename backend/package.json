@@ -4,6 +4,7 @@
   "type": "module",
   "private": true,
   "scripts": {
+    "build": "node --check server.js && node --check check.js",
     "server": "node server.js",
     "once": "node check.js",
     "test:email": "node check.js --test"
