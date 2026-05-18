@@ -24,7 +24,10 @@ export default function LandingPage() {
           transition={{ duration: 0.45, ease }}
         >
           <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-            <span className="font-display font-bold text-xl tracking-tight select-none">StockWatch</span>
+            <div className="flex items-center gap-2.5">
+              <img src="/mark.png" alt="StockWatch" width={28} height={28} className="flex-shrink-0" />
+              <span className="font-display font-bold text-xl tracking-tight select-none">StockWatch</span>
+            </div>
             <nav className="flex items-center gap-3">
               <Link href={ROUTES.LOGIN} className="font-mono text-[0.62rem] tracking-widest uppercase text-ink-soft hover:text-ink transition-colors px-2 py-1">
                 Sign In

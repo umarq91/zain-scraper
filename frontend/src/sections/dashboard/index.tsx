@@ -64,6 +64,7 @@ export default function Dashboard() {
     <div className="min-h-screen bg-grid">
       <AppHeader>
         <div className="py-4 pr-6 border-r border-ink flex items-center gap-3">
+          <img src="/mark.png" alt="StockWatch" width={28} height={28} className="flex-shrink-0" />
           <div>
             <span className="font-display font-bold text-ink" style={{ fontSize: "1.2rem", letterSpacing: "-0.02em" }}>StockWatch</span>
             <span className="block font-mono text-[0.55rem] tracking-[0.12em] uppercase text-ink-soft opacity-60 leading-none mt-0.5">your size radar</span>

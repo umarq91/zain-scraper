@@ -28,6 +28,10 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "StockWatch — Never Miss a Drop",
   description: "Get instant email alerts when your size comes back in stock.",
+  icons: {
+    icon: "/mark.png",
+    apple: "/mark.png",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

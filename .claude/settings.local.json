@@ -39,7 +39,11 @@
       "Bash(curl *)",
       "Read(//tmp/**)",
       "Bash(pkill -f \"next dev\")",
-      "Bash(npm list *)"
+      "Bash(npm list *)",
+      "Read(//private/tmp/**)",
+      "Bash(unzip -o \"/Users/sid/Downloads/watcher \\(1\\).zip\" -d watcher_icons)",
+      "Bash(cp \"/tmp/watcher_icons/logo/stockwatch-favicon-512.png\" /Users/sid/Developer/work/scraper-selenium/frontend/public/favicon.png)",
+      "Bash(cp \"/tmp/watcher_icons/logo/stockwatch-icon-dark.png\" /Users/sid/Developer/work/scraper-selenium/frontend/public/logo.png)"
     ]
   }
 }
