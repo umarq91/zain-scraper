@@ -36,7 +36,7 @@ export async function GET() {
     ]);
 
     if (prodError) throw prodError;
-    const interval_minutes: number = userSettings?.interval_minutes ?? 5;
+    const interval_minutes: number = userSettings?.interval_minutes ?? 10;
 
     const productIds = (products ?? []).map((p) => p.id);
     let stateMap: Record<string, Record<string, boolean>> = {};

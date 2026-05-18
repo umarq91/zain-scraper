@@ -9,7 +9,7 @@ type Msg = { type: "success" | "error"; text: string };
 
 export function useSettings() {
   const supabase = createClient();
-  const [settings, setSettings] = useState<UserSettings>({ email_to: "", interval_minutes: 5 });
+  const [settings, setSettings] = useState<UserSettings>({ email_to: "", interval_minutes: 10 });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<Msg | null>(null);
@@ -22,7 +22,7 @@ export function useSettings() {
       ]);
       setSettings({
         email_to: data?.email_to || user?.email || "",
-        interval_minutes: data?.interval_minutes ?? 5,
+        interval_minutes: data?.interval_minutes ?? 10,
       });
       setLoading(false);
     }

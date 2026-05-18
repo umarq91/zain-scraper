@@ -21,7 +21,7 @@ export async function GET() {
   }
 
   return NextResponse.json(
-    data ?? { email_to: user.email ?? "", interval_minutes: 5 }
+    data ?? { email_to: user.email ?? "", interval_minutes: 10 }
   );
 }
 
@@ -37,7 +37,7 @@ export async function PUT(req: Request) {
   const VALID_INTERVALS = [1, 2, 5, 10, 15, 30];
   const interval_minutes = VALID_INTERVALS.includes(Number(body.interval_minutes))
     ? Number(body.interval_minutes)
-    : 5;
+    : 10;
 
   const { error } = await supabase.from("user_settings").upsert({
     user_id: user.id,

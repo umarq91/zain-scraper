@@ -9,19 +9,33 @@ const TRIGGER_SECRET = process.env.TRIGGER_SECRET;
 const MIN_INTERVAL_MS = 60_000; // hard floor: 1 minute
 
 let scheduleTimer = null;
+let lastCheckAt = null;
+let nextCheckAt = null;
+let currentIntervalMin = null;
 
 async function scheduleNext() {
   const intervalMin = await getMinIntervalMinutes();
   const intervalMs = Math.max(MIN_INTERVAL_MS, intervalMin * 60_000);
+  currentIntervalMin = intervalMin;
+  nextCheckAt = new Date(Date.now() + intervalMs).toISOString();
   console.log(`[${now()}] Next check in ${intervalMin} min`);
   scheduleTimer = setTimeout(async () => {
+    lastCheckAt = now();
     await check().catch((err) => console.error(`[${now()}] Check error: ${err.message}`));
     scheduleNext();
   }, intervalMs);
 }
 
 app.get("/health", (_req, res) => {
-  res.json({ ok: true, time: now() });
+  res.json({
+    ok: true,
+    time: now(),
+    scheduler: {
+      intervalMinutes: currentIntervalMin,
+      lastCheckAt,
+      nextCheckAt,
+    },
+  });
 });
 
 app.post("/trigger", async (req, res) => {
@@ -39,7 +53,7 @@ if (!smtpOk) {
 
 app.listen(PORT, async () => {
   console.log(`[${now()}] Server running on :${PORT}`);
-  // Run immediately on startup, then schedule dynamically
+  lastCheckAt = now();
   await check().catch((err) => console.error(`[${now()}] Startup check error: ${err.message}`));
   scheduleNext();
 });
