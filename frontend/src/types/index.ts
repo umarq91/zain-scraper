@@ -1,6 +1,5 @@
 export type UserSettings = {
   email_to: string;
-  interval_minutes: number;
 };
 
 export type Product = {
@@ -28,5 +27,4 @@ export type ProductWithState = Product & {
 
 export type DashboardData = {
   products: ProductWithState[];
-  interval_minutes: number;
 };

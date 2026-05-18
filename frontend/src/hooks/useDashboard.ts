@@ -29,7 +29,7 @@ export function useDashboard() {
 
   useEffect(() => {
     fetchData();
-    const intervalMs = Math.max(30_000, (data?.interval_minutes ?? 10) * 60_000);
+    const intervalMs = 10 * 60_000;
     const id = setInterval(fetchData, intervalMs);
     return () => clearInterval(id);
   }, [fetchData, data?.interval_minutes]);

@@ -1,5 +1,5 @@
 import express from "express";
-import { check, getMinIntervalMinutes, verifyTransport, now } from "./lib/checker.js";
+import { check, INTERVAL_MINUTES, verifyTransport, now } from "./lib/checker.js";
 
 const app = express();
 app.use(express.json());
@@ -14,11 +14,10 @@ let nextCheckAt = null;
 let currentIntervalMin = null;
 
 async function scheduleNext() {
-  const intervalMin = await getMinIntervalMinutes();
-  const intervalMs = Math.max(MIN_INTERVAL_MS, intervalMin * 60_000);
-  currentIntervalMin = intervalMin;
+  const intervalMs = Math.max(MIN_INTERVAL_MS, INTERVAL_MINUTES * 60_000);
+  currentIntervalMin = INTERVAL_MINUTES;
   nextCheckAt = new Date(Date.now() + intervalMs).toISOString();
-  console.log(`[${now()}] Next check in ${intervalMin} min`);
+  console.log(`[${now()}] Next check in ${INTERVAL_MINUTES} min`);
   scheduleTimer = setTimeout(async () => {
     lastCheckAt = now();
     await check().catch((err) => console.error(`[${now()}] Check error: ${err.message}`));

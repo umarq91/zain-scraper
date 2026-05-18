@@ -7,7 +7,6 @@ import type { Product } from "@/types";
 
 export function ProductRow({
   product,
-  intervalMinutes,
   isRemoving,
   isSaving,
   isSaved,
@@ -19,7 +18,6 @@ export function ProductRow({
   onTogglePriceWatch,
 }: {
   product: Product;
-  intervalMinutes: number;
   isRemoving: boolean;
   isSaving: boolean;
   isSaved: boolean;
@@ -136,13 +134,13 @@ export function ProductRow({
                     disabled={busy}
                     className={`font-mono text-[0.55rem] tracking-[0.08em] uppercase px-3 py-1 transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${active ? "bg-ink text-paper" : "text-ink-soft hover:text-ink bg-paper-pure"}`}
                   >
-                    {mode === "once" ? "Once" : `Every ${intervalMinutes} min`}
+                    {mode === "once" ? "Once" : "Every 10 min"}
                   </button>
                 );
               })}
             </div>
             <p className="font-mono text-[0.5rem] text-ink-soft opacity-30 leading-tight">
-              {(product.notify_mode ?? "once") === "once" ? "Alert once per restock" : `Alert every ${intervalMinutes} min while in stock`}
+              {(product.notify_mode ?? "once") === "once" ? "Alert once per restock" : "Alert every 10 min while in stock"}
             </p>
           </div>
 

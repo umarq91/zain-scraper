@@ -165,14 +165,7 @@ async function checkProduct(product, emailTo) {
   }
 }
 
-export async function getMinIntervalMinutes() {
-  const { data } = await supabase
-    .from("user_settings")
-    .select("interval_minutes");
-  if (!data?.length) return 10;
-  const min = Math.min(...data.map((s) => s.interval_minutes ?? 10));
-  return Math.max(1, min);
-}
+export const INTERVAL_MINUTES = 10;
 
 export async function check() {
   const ts = now();
@@ -180,14 +173,13 @@ export async function check() {
 
   const { data: allSettings, error: sErr } = await supabase
     .from("user_settings")
-    .select("user_id, email_to, interval_minutes, last_run_at");
+    .select("user_id, email_to, last_run_at");
   if (sErr) { console.error(`[${ts}] Settings fetch error: ${sErr.message}`); return; }
 
-  // Only check users whose interval has elapsed since last run
   const dueSettings = (allSettings ?? []).filter((s) => {
     if (!s.last_run_at) return true;
     const elapsedMin = (nowMs - new Date(s.last_run_at).getTime()) / 60000;
-    return elapsedMin >= (s.interval_minutes ?? 10);
+    return elapsedMin >= INTERVAL_MINUTES;
   });
 
   if (!dueSettings.length) {
@@ -197,7 +189,6 @@ export async function check() {
 
   const dueUserIds = dueSettings.map((s) => s.user_id);
   const emailByUser = Object.fromEntries(dueSettings.map((s) => [s.user_id, s.email_to]));
-  const intervalByUser = Object.fromEntries(dueSettings.map((s) => [s.user_id, s.interval_minutes ?? 10]));
 
   const { data: products, error: pErr } = await supabase
     .from("products")
@@ -230,8 +221,5 @@ export async function check() {
     )
   );
 
-  const summary = dueSettings
-    .map((s) => `${s.user_id.slice(0, 8)}… @${intervalByUser[s.user_id]}min`)
-    .join(", ");
-  console.log(`[${ts}] Intervals: ${summary}`);
+  console.log(`[${ts}] Checked ${dueUserIds.length} user(s) @${INTERVAL_MINUTES}min interval.`);
 }

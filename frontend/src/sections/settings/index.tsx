@@ -13,8 +13,6 @@ import { ProductRow } from "./components/ProductRow";
 import { ALL_SIZES } from "@/constants/sizes";
 import { ROUTES } from "@/constants/routes";
 
-const INTERVALS = [1, 2, 5, 10, 15, 30] as const;
-
 type AddMode = "single" | "bulk";
 type NotifyMode = "once" | "always";
 type BulkProgress = { done: number; total: number; current: string };
@@ -134,12 +132,12 @@ export default function SettingsPage() {
             onClick={() => onChange(mode)}
             className={`font-mono text-[0.6rem] tracking-[0.08em] uppercase px-3 py-1.5 transition-colors disabled:opacity-40 ${value === mode ? "bg-ink text-paper" : "text-ink-soft hover:text-ink"}`}
           >
-            {mode === "once" ? "Once" : `Every ${settings.interval_minutes} min`}
+            {mode === "once" ? "Once" : "Every 10 min"}
           </button>
         ))}
       </div>
       <p className="font-mono text-[0.52rem] text-ink-soft opacity-40">
-        {value === "once" ? "One alert per restock" : `Alert every ${settings.interval_minutes} min while in stock`}
+        {value === "once" ? "One alert per restock" : "Alert every 10 min while in stock"}
       </p>
     </div>
   );
@@ -166,18 +164,6 @@ export default function SettingsPage() {
           <div className="mb-5">
             <label className="block font-mono text-[0.6rem] tracking-[0.1em] uppercase text-ink-soft mb-1.5">Alert Email</label>
             <input type="email" value={settings.email_to} onChange={(e) => setSettings((s) => ({ ...s, email_to: e.target.value }))} placeholder="you@example.com" className="w-full border border-ink bg-paper px-3 py-2.5 text-sm font-body focus-hard transition-shadow" />
-          </div>
-
-          <div className="mb-6">
-            <label className="block font-mono text-[0.6rem] tracking-[0.1em] uppercase text-ink-soft mb-1.5">Check Interval</label>
-            <div className="grid grid-cols-3 gap-0 border border-ink overflow-hidden">
-              {INTERVALS.map((min) => (
-                <button key={min} type="button" onClick={() => setSettings((s) => ({ ...s, interval_minutes: min }))} className={`font-mono text-[0.6rem] tracking-[0.06em] uppercase py-2 border-b border-r border-ink transition-colors last:border-r-0 ${settings.interval_minutes === min ? "bg-ink text-paper" : "text-ink-soft hover:text-ink bg-paper-pure"}`}>
-                  {min} min
-                </button>
-              ))}
-            </div>
-            <p className="font-mono text-[0.52rem] text-ink-soft opacity-40 mt-1.5">How often we check your products for size availability</p>
           </div>
 
           <button onClick={saveSettings} disabled={saving} className="w-full py-3 font-mono text-[0.65rem] tracking-[0.1em] uppercase disabled:opacity-40 bg-ink text-paper shadow-hard-sm hover-lift transition-colors">
@@ -391,8 +377,6 @@ export default function SettingsPage() {
                 <span className="inline-block w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: settings.email_to ? "var(--accent)" : "var(--grid-line)" }} />
                 <span className="font-mono text-[0.6rem] tracking-[0.1em] uppercase">Alert Settings</span>
                 <span className="font-mono text-[0.58rem] text-ink-soft opacity-40">{settings.email_to || "no email set"}</span>
-                <span className="font-mono text-[0.55rem] text-ink-soft opacity-30">·</span>
-                <span className="font-mono text-[0.58rem] text-ink-soft opacity-40">every {settings.interval_minutes} min</span>
               </div>
               <span className="font-mono text-[0.6rem] tracking-widest uppercase text-ink-soft group-hover:text-accent transition-colors">Configure →</span>
             </button>
@@ -418,7 +402,6 @@ export default function SettingsPage() {
                     <ProductRow
                       key={product.id}
                       product={product}
-                      intervalMinutes={settings.interval_minutes}
                       isRemoving={removingIds.has(product.id)}
                       isSaving={savingIds.has(product.id)}
                       isSaved={savedIds.has(product.id)}

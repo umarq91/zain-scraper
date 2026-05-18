@@ -144,7 +144,7 @@ export default function Dashboard() {
                     )}
                     <span className="text-grid-line">·</span>
                     <span className="font-mono text-[0.6rem] tracking-[0.12em] uppercase text-ink-soft">
-                      checks every {data.interval_minutes} min
+                      checks every 10 min
                     </span>
                   </div>
                   <button onClick={fetchData} className="font-mono text-[0.6rem] tracking-widest uppercase text-ink-soft hover:text-accent transition-colors flex-shrink-0">
