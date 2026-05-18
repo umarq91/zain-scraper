@@ -32,7 +32,7 @@ export function useDashboard() {
     const intervalMs = 10 * 60_000;
     const id = setInterval(fetchData, intervalMs);
     return () => clearInterval(id);
-  }, [fetchData, data?.interval_minutes]);
+  }, [fetchData]);
 
   async function triggerCheck() {
     setTriggering(true);
