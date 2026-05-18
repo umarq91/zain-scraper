@@ -4,7 +4,7 @@ on:
   # GitHub Actions cron: minimum granularity is 5 minutes, and scheduled runs
   # are often delayed several minutes under load. It is not precise.
   schedule:
-    - cron: "*/5 * * * *"
+    - cron: "*/10 * * * *"
   # Lets you trigger a run by hand from the Actions tab.
   workflow_dispatch: {}
 

@@ -169,8 +169,8 @@ export async function getMinIntervalMinutes() {
   const { data } = await supabase
     .from("user_settings")
     .select("interval_minutes");
-  if (!data?.length) return 5;
-  const min = Math.min(...data.map((s) => s.interval_minutes ?? 5));
+  if (!data?.length) return 10;
+  const min = Math.min(...data.map((s) => s.interval_minutes ?? 10));
   return Math.max(1, min);
 }
 
@@ -187,7 +187,7 @@ export async function check() {
   const dueSettings = (allSettings ?? []).filter((s) => {
     if (!s.last_run_at) return true;
     const elapsedMin = (nowMs - new Date(s.last_run_at).getTime()) / 60000;
-    return elapsedMin >= (s.interval_minutes ?? 5);
+    return elapsedMin >= (s.interval_minutes ?? 10);
   });
 
   if (!dueSettings.length) {
@@ -197,7 +197,7 @@ export async function check() {
 
   const dueUserIds = dueSettings.map((s) => s.user_id);
   const emailByUser = Object.fromEntries(dueSettings.map((s) => [s.user_id, s.email_to]));
-  const intervalByUser = Object.fromEntries(dueSettings.map((s) => [s.user_id, s.interval_minutes ?? 5]));
+  const intervalByUser = Object.fromEntries(dueSettings.map((s) => [s.user_id, s.interval_minutes ?? 10]));
 
   const { data: products, error: pErr } = await supabase
     .from("products")
