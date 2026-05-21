@@ -26,8 +26,9 @@ export default function LoginPage() {
       if (error) setError(error.message);
       else { router.push(ROUTES.HOME); router.refresh(); }
     } else {
-      const { error } = await supabase.auth.signUp({ email, password });
+      const { data, error } = await supabase.auth.signUp({ email, password });
       if (error) setError(error.message);
+      else if (data.session) { router.push(ROUTES.HOME); router.refresh(); }
       else { setNotice("Check your email to confirm, then sign in."); setMode("signin"); }
     }
     setLoading(false);
